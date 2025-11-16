@@ -2,7 +2,7 @@
 
 ## General Information
 
-This project utilized OpenAI's [Agents SDK](https://openai.github.io/openai-agents-python/) to create a custom agentic workflow for the following framework:
+This project utilizes OpenAI's [Agents SDK](https://openai.github.io/openai-agents-python/) to create a custom agentic workflow for the following framework:
 
 **Community-urban afforestation optimization** – Design natural plant bundles (like
 “Legos”) for urban afforestation using digital technology, AI agents, and custom
@@ -14,7 +14,7 @@ implementation.
 As of 11/16/2025, this repo hosts a prototype of this framework with the structure in the graph below:
 
 ![Current Agent Structure](agent_graph.png)
-*Current Agent Structure*
+<center>*Current Agent Structure*</center>
 
 This workflow is able to:
 - Take in a user query in the terminal
@@ -27,7 +27,7 @@ This workflow is able to:
 
 To run this code on your machine, complete the following steps:
 
-1. Clone this repo.
+1. Clone this repo with `git clone https://github.com/anthonyrohloff/ecooptima-agentic-workflow.git`.
 
 2. Create a Python virtual environment and run `pip install -r requirements.txt`.
 
@@ -41,7 +41,15 @@ To ensure a smooth development environment, please adhere to the following rules
 
 1. Any time you notice an issue or want to add a feature, please update the TODO.md and create an issue in GitHub. Give a detailed description of the issue/feature in GitHub.
 
-2. Everything is a branch. No code changes should be made on the main branch. Anytime you want to modify the code, use `git checkout -b [your-branch-name]`.
+2. Everything is a branch. No code changes should be made on the main branch. Anytime you want to modify the code, use `git checkout -b [your-branch-name]`, make your changes there, then commit and merge.
+
+To commit your code to Git, do the following:
+
+1. `git status` to see all modified files.
+
+2. `git add .` to add all modifications OR add files manually with `git add [your-file-name]`.
+
+3. `git commit -m "[your-commit-message]"` to commit the changes to Git.
 
 Then, when your code committed to your branch and ready to be merged, perform the following process:
 
