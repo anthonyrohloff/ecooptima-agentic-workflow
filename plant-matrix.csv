@@ -1,0 +1,34 @@
+_id,CommonName,ScientificName,PlantType,MoistureLevel,pH,Composition,Habitat,Sun,Height,Spread
+67f507b91b92e83e0fbf61f2,Big Bluestem,Andropogon gerardii,Herbaceous (Grass),Moist,"Acidic, Slightly acidic, Neutral","Well drained, Loamy, Clay, Sandy",Prairies,Full sun,4-6,
+67f507b91b92e83e0fbf61f3,Indian Grass,Sorghastrum nutans,Herbaceous (Grass),All,"Slightly acidic, Neutral",All soil,,Full sun,6,
+67f507b91b92e83e0fbf61f4,Little Bluestem,Schizachyrium scoparium,Herbaceous (Grass),Dry,All,"Well drained, Clay",,Full sun,2-4,
+67f507b91b92e83e0fbf61f5,Purple coneflower,Echinacea purpurea,Herbaceous (Perennial),Moist,"Acidic, Slightly acidic, Neutral","Well drained, Rocky, Clay, Sandy","Prairies, savannas, edges of woodlands","Full sun, Partial sun",2-4,1-2
+67f507b91b92e83e0fbf61f6,Common Milkweed,Asclepias syriaca,Herbaceous (Perennial),Moist,Neutral,Well drained,,"Full sun, Partial sun",2-4,2-3
+67f507b91b92e83e0fbf61f7,Joe-Pye Weed,Eutrochium maculatum,Herbaceous (Perennial),"Moist, Wet",All,Well drained,,"Full sun, Partial sun",3-7,
+67f507b91b92e83e0fbf61f8,Swamp Milkweed,Asclepias incarnata,Herbaceous (Perennial),"Moist, Wet",All,"Clay, Loamy","swamps, wet meadows",Full sun,2-5,2-3
+67f507b91b92e83e0fbf61f9,Blue Flag Iris,Iris versicolor,Herbaceous (Perennial),"Moist, Wet",Neutral,"Well drained, Rich, Loamy",,"Full sun, Partial sun",2,
+67f507b91b92e83e0fbf61fa,American Hazelnut,Corylus americana,Shrub (Deciduous),Moist,"Acidic, Slightly acidic, Neutral",Well drained,Understory plant along wood edges,"Full sun, Partial sun",6-10,4-6
+67f507b91b92e83e0fbf61fb,Black Raspberry,Rubus occidentalis,Shrub (Deciduous),Moist,"Slightly acidic, Neutral","Well drained, Sandy, Loamy, Clay",,"Full sun, Partial sun, Full shade",3-8,
+67f507b91b92e83e0fbf61fc,Coralberry,Symphoricarpos orbiculatus,Shrub (Deciduous),All,Neutral,"Well drained, Loamy, Rocky","Low areas, along edges of woodlands","Full sun, Partial sun",3-5,3-6
+67f507b91b92e83e0fbf61fd,Indigo Bush,Amorpha fruticosa,Shrub (Deciduous),All,All,All soil,,"Full sun, Partial sun",5-8+,
+67f507b91b92e83e0fbf61fe,Prairie Rose,Rosa setigera,Shrub (Deciduous),Moist,"Slightly acidic, Neutral","Well drained, Clay, Sandy","along streams, roads, fence rows","Full sun, Partial sun",5-8+,
+67f507b91b92e83e0fbf61ff,Buttonbush,Cephalanthus occidentalis,Shrub (Deciduous),"Moist, Wet",Acidic,Well drained,"wet, lowland areas","Full sun, Partial sun",5-8+,
+67f507b91b92e83e0fbf6200,Spicebush,Lindera benzoin,Shrub (Deciduous),"Moist, Wet","Acidic, Slightly acidic, Neutral",Well drained,"moist woodlands, shrub borders, woods, along streams","Full sun, Partial sun",6-12+,
+67f507b91b92e83e0fbf6201,Gray Dogwood,Cornus racemosa,Shrub (Deciduous),All,"Slightly acidic, Neutral",All soil,"pond and stream banks, shrub border","Full sun, Partial sun, Full shade",8+,
+67f507b91b92e83e0fbf6202,Swamp Rose,Rosa palustris,Shrub (Deciduous),Wet,Acidic,Loamy,"stream banks, marshes and swamps","Full sun, Partial sun",3-6,3-6
+67f507b91b92e83e0fbf6203,Bladdernut,Staphylea trifolia,Shrub (Deciduous),Moist,All,All soil,"Moist rich woods, floodplains and riverbanks","Full sun, Partial sun, Full shade",8-15,8-15
+67f507b91b92e83e0fbf6204,Eastern Red Cedar,Juniperus virginiana,Tree (Conifer),Moist,"Acidic, Slightly acidic, Neutral","Well drained, Rich","Roadsides, fencerows",Full sun,30-65 ,8-15
+67f507b91b92e83e0fbf6205,Eastern White Pine,Pinus strobus,Tree (Conifer),Moist,"Slightly acidic, Acidic",Well drained,Adatable to most soil,"Full sun, Partial sun",50-80 ,20-40
+67f507b91b92e83e0fbf6206,Sugar Maple,Acer saccharum,Tree (Deciduous),Moist,Acidic,Well drained,,"Full sun, Partial sun, Full shade",40-80 ,30-60
+67f507b91b92e83e0fbf6207,Yellow Poplar,Liriodendron tulipifera,Tree (Deciduous),Moist,All,Well drained,,"Full sun, Partial sun",70-130 ,30-60
+67f507b91b92e83e0fbf6208,White Oak,Quercus alba,Tree (Deciduous),Moist,Slightly acidic,"Well drained, Rich, Loamy",,Full sun,60-100 ,50-90
+67f507b91b92e83e0fbf6209,Northern Red Oak,Quercus rubra,Tree (Deciduous),Moist,"Slightly acidic, Acidic","Well drained, Loamy, Clay, Sandy",,"Full sun, Partial sun",50-75 ,40-60
+67f507b91b92e83e0fbf620a,American Sycamore,Platanus occidentalis,Tree (Deciduous),Moist,All,Well drained,"Along rivers and streams, occasionally upland","Full sun, Partial sun",75-100 ,50-70
+67f507b91b92e83e0fbf620b,Freemans Maple,Acer x freemanii,Tree (Deciduous),All,"Slightly acidic, Neutral","Well drained, Rich, Clay",,Full sun,40-60 ,20-40
+67f507b91b92e83e0fbf620c,Pin Oak,Quercus palustris,Tree (Deciduous),Wet,Acidic,"Rich, Clay",low-land wet areas,Full sun,60-70 ,40-50
+67f507b91b92e83e0fbf620d,Redbud,Cercis canadensis,Tree (Deciduous),Moist,All,"Well drained, All",wooded area,"Full sun, Partial sun",20-30,25-40
+67f507b91b92e83e0fbf620e,Sassafras,Sassafras albidum,Tree (Deciduous),Moist,"Acidic, Slightly acidic, Neutral","Well drained, Loamy, Sandy",,"Full sun, Partial sun",20-30 ,25-40
+67f507b91b92e83e0fbf620f,Northorn Catalpa,Catalpa speciosa,Tree (Deciduous),Moist,All,All soil,,Full sun,40-60 ,20-40
+67f507b91b92e83e0fbf6210,Swamp white oak,Quercus bicolor,Tree (Deciduous),Wet,"Acidic, Slightly acidic, Neutral","Clay, Loamy, Sandy, Well drained",,Full sun,50-60 ,50-60
+67f507b91b92e83e0fbf6211,Sweet gum,Liquidambar styraciflua,Tree (Deciduous),"Moist, Wet",Acidic,Well drained,Deep moist bottomlands,Full sun,60-75,40-75
+67f507b91b92e83e0fbf6212,American Linden/Basswood,Tilia americana,Tree (Deciduous),Moist,"Slightly acidic, Neutral",Well drained,,"Full sun, Partial sun",60-80 ,30-60

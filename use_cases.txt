@@ -1,0 +1,20 @@
+Framework
+The framework is built on the foundation and integrates artificial intelligence with marginal
+abatement cost curves (MACCs) to address sustainability economics:
+• Community-urban afforestation optimization – Design natural plant bundles (like
+“Legos”) for urban afforestation using digital technology, AI agents, and custom
+GPTs, guided by MACCs, to maximize carbon absorption and enable scalable
+implementation.
+• Consumer-focused sustainability economics – Create a MACC for climate change
+mitigation that evaluates options from green purchases to EV adoption and solar
+installations.
+• Business-focused sustainability economics – Create a MACC for climate change
+mitigation for businesses, covering strategies from energy-efficient buildings to EVs,
+carbon capture and storage (CCS), and direct air capture (DAC).
+• Government-focused – Create a MACC for incentive-based tax policy based on
+carbon removal credits aimed at accelerating the adoption and establishment of
+new systems throughout the community, fostering broader engagement and
+investment.
+• Academic-focused – Create a MACC for climate change mitigation for academic
+institutions that considers sustainability research, knowledge transfer, and job
+opportunities.
