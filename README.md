@@ -11,7 +11,7 @@ implementation.
 
 ## Capabilities
 
-As of 11/16/2025, this repo hosts a prototype of this framework with the structure in the graph below:
+This repo hosts a prototype of this framework with the structure in the graph below:
 
 ![Current Agent Structure](agent_graph.png)
 *Current Agent Structure*
