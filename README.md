@@ -14,7 +14,7 @@ implementation.
 As of 11/16/2025, this repo hosts a prototype of this framework with the structure in the graph below:
 
 ![Current Agent Structure](agent_graph.png)
-<center>*Current Agent Structure*</center>
+*Current Agent Structure*
 
 This workflow is able to:
 - Take in a user query in the terminal
