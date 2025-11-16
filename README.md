@@ -54,8 +54,6 @@ Then, when your code is ready to be merged, perform the following process:
 
 5. Open GitHub and find the "Compare & Pull Request" button at the top of the "Code" page.
 
-6. Describe the code being merged and add something like:
-
-`Resolves #12`
+6. Describe the code being merged and add something like `Resolves #12`
 
 where "#12" is the number of the issue that was opened in GitHub. Delete your branch from the GitHub repo after this is done (the option will appear).
