@@ -4,7 +4,7 @@ from agents.extensions.visualization import draw_graph
 from pydantic import BaseModel
 import asyncio
 
-from ecooptima_tools import plot_tree_metric_bar_chart
+from ecooptima_tools import plot_tree_metric_bar_chart, plot_tree_metric_pie_chart
 
 postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface."
 
@@ -31,6 +31,7 @@ tree_advisor_agent = Agent(
             vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"]
         ),
         plot_tree_metric_bar_chart,
+        plot_tree_metric_pie_chart
     ]
 )
 
