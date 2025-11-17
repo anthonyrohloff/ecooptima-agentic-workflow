@@ -33,7 +33,9 @@ To run this code on your machine, complete the following steps:
 
 3. Set your OpenAI API key in the terminal with `export OPENAI_API_KEY=sk-...`.
 
-4. Run the **ecooptima.py** file and try it out!
+4. Install [Graphviz](https://graphviz.org/download/).
+
+5. Run the **ecooptima.py** file and try it out!
 
 ## Contributing
 
