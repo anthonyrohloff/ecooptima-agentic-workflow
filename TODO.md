@@ -2,7 +2,7 @@
 
 ## Documentation
 - [x] Flesh out README.md
-- [ ] Include Graphviz installation instructions in README.md
+- [x] Include Graphviz installation instructions in README.md
 
 ## Features
 - [ ] Enable "conversations" with agents - not just one-line interactions
