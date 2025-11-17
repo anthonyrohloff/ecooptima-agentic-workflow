@@ -94,7 +94,7 @@ draw_graph(triage_agent, filename="agent_graph")
 async def main():
     while True:
         try:
-            user_input = input("")
+            user_input = input("Input your query (or type 'exit' to quit): ")
             
             # Exit condition
             if user_input.strip() == "exit":

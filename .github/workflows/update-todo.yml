@@ -1,0 +1,45 @@
+name: Update TODO from issues
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, reopened, closed]
+
+jobs:
+  update-todo:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write        # so we can push changes to the repo
+      issues: read           # so we can read issues from the API
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install @actions/core @actions/github
+
+      - name: Generate TODO.md from issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/scripts/generate-todo.js
+
+      - name: Commit and push changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add TODO.md
+            git commit -m "Update TODO.md from issues [skip ci]" || echo "No changes to commit"
+            git push
+          else
+            echo "No changes in TODO.md; nothing to commit."
+          fi
