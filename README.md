@@ -55,14 +55,12 @@ To commit your code to Git, do the following:
 
 Then, when your code committed to your branch and ready to be merged, perform the following process:
 
-1. Check off the item in TODO.md.
+1. `git checkout [your-branch-name]`
 
-2. `git checkout [your-branch-name]`
+2. `git pull origin main`
 
-3. `git pull origin main`
+3. `git push -u origin [your-branch-name]`
 
-4. `git push -u origin [your-branch-name]`
+4. Open GitHub and find the "Compare & Pull Request" button at the top of the "Code" page.
 
-5. Open GitHub and find the "Compare & Pull Request" button at the top of the "Code" page.
-
-6. Describe the code being merged and add something like `Resolves #12` where "#12" is the number of the issue that was opened in GitHub. Delete your branch from the GitHub repo after this is done (the option will appear).
+5. Describe the code being merged and add something like `Resolves #12` where "#12" is the number of the issue that was opened in GitHub. Delete your branch from the GitHub repo after this is done (the option will appear).
