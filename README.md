@@ -41,7 +41,7 @@ To run this code on your machine, complete the following steps:
 
 To ensure a smooth development environment, please adhere to the following rules for development:
 
-1. Any time you notice an issue or want to add a feature, please update the TODO.md and create an issue in GitHub. Give a detailed description of the issue/feature in GitHub.
+1. Any time you notice an issue or think of a feature you want to implement, create an issue in GitHub. Give a detailed description of the issue/feature. GitHub Actions will **automatically** update the TODO.md file for easy reference while developing. **DO NOT touch TODO.md**.
 
 2. Everything is a branch. No code changes should be made on the main branch. Anytime you want to modify the code, use `git checkout -b [your-branch-name]`, make your changes there, then commit and merge.
 
