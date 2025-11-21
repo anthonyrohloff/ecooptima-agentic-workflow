@@ -10,8 +10,10 @@ Generated from open GitHub issues.
   The proposed structure is:
   ```
   Input Agent -> Plant Matrix Agent -> Planting Benefits Agent  -> Dashboard Agent
-                                                           \                                        /
-                                                              -> Local ROI Agent ->```
+                                  \                        /
+                                                              -> Local ROI Agent ->
+  ```
+  
   ---
   
   **Input Agent**
