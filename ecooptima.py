@@ -1,4 +1,4 @@
-from agents import Agent, FileSearchTool, InputGuardrail, GuardrailFunctionOutput, Runner
+from agents import Agent, FileSearchTool, InputGuardrail, GuardrailFunctionOutput, Runner, ItemHelpers
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
 from pydantic import BaseModel
@@ -6,7 +6,7 @@ import asyncio
 
 
 # Import plotting tools
-from ecooptima_tools import plot_tree_metric_bar_chart, plot_tree_metric_pie_chart
+from ecooptima_tools import plot_bar_chart, plot_pie_chart
 
 
 # Common postfix for agent instructions
@@ -41,27 +41,49 @@ async def eco_optima_guardrail(ctx, agent, input_data):
 
 
 # Define specialist agents
-plant_matrix_agent = Agent(
-    name="Plant Matrix Advisor",
-    handoff_description="Specialist agent for plant matrix",
-    instructions="""You give recommendations on the best plant species to use from the plant matrix file given to you
-                    based on the user's query and the structured list of variables passed to you. Enforce species diversity 
-                    and resilience. 
-                
-                    When asked a question about plants, always refer to the file by using the provided FileSearchTool. 
-                    Avoid responding with plants from the internet. 
-                
-                    When someone asks to visualize numeric comparisons (heights, canopy spread, growth rate, etc.), call the proper 
-                    charting tool with the structured list of plants before answering.
-
-                    In your answer include a ranked list of species with fields for size, survival probability, maintenance costs, 
-                    and benefit coefficients (carbon, stormwater, energy savings).""" + postfix,
+plant_benefits_agent = Agent(
+    name="Planting Benefits Advisor",
+    handoff_description="Specialist agent for quantifying planting benefits",
+    instructions="""You quantify the environmental benefits (carbon sequestration and stormwater inception) for the list
+                    of plants provided to you. Use the vector store file search tool to look up information about each plant 
+                    given to you.
+                    
+                    Return your answer to the user as a detailed report with quantified benefits for each plant species. Feel
+                    free to include tables and charts to illustrate your points if necessary.
+                    
+                    Always provide a rationale for your quantifications and cite relevant studies or data sources.""" + postfix,
     tools=[
         FileSearchTool(
             vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
         ),
-        plot_tree_metric_bar_chart,
-        plot_tree_metric_pie_chart
+        plot_bar_chart,
+        plot_pie_chart
+    ]
+)
+
+class PlantSelection(BaseModel):
+    plants: list[str]
+    notes: str
+
+plant_matrix_agent = Agent(
+    name="Plant Matrix Advisor",
+    handoff_description="Specialist agent for plant matrix",
+    instructions="""You recommend the best plant species from the provided plant matrix, using only the FileSearchTool (no internet sources), 
+                    based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
+                    (height, canopy spread, growth rate, etc.), call the appropriate charting tool first.
+
+                    Respond to the user with a ranked list of species, including size, survival probability, and maintenance costs.
+
+                    After you produce your ranked list, immediately hand off to the Planting Benefits Advisor, passing only the plant names (no other details).
+                    """ + postfix,
+    output_type=PlantSelection,
+    handoffs=[plant_benefits_agent], # TODO: it doesnt hand off for some reason - figure it out
+    tools=[
+        FileSearchTool(
+            vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
+        ),
+        plot_bar_chart,
+        plot_pie_chart
     ]
 )
 
@@ -70,16 +92,15 @@ plant_matrix_agent = Agent(
 triage_agent = Agent(
     name="Triage Agent",
     instructions="""You use the given query and map it to the following variables (leave any variables that are not mentioned in the query blank):
-                    user_location = [where the user is planning a project (use Cincinnati, OH as default if not specified)]
+                    user_location = Cincinnati, Ohio
                     project_type = [what the desired project is (tiny forest, street trees, schoolyard, etc...)]
                     scale = [size of project (for a park, a neighborhood, a city, a university, etc...)]
                     time_horizon_years = [how long the user wants project SETUP will take, not including continuous maintenance]
-                    equity_priorities = [Needs (canopy gap, heat vulnerability, asthma, income, renter ratio, etc...), Access (number of users), Process (community engagement, multilingual materials, local hiring, stewardship, etc...), and Recognition (cultural or historical considerations)],
                     budget = [total budget for project]
                     
-                    Then, pass the query and these variables to the plant_matrix_agent.
+                    Then, pass these variables to the plant_matrix_agent.
                     """,
-    handoffs=[plant_matrix_agent], # list of specialist agents to hand off to
+    handoffs=[plant_matrix_agent],
     input_guardrails=[
         InputGuardrail(guardrail_function=eco_optima_guardrail), # attach the eco_optima_guardrail to the triage agent
     ],
@@ -95,15 +116,45 @@ async def main():
     while True:
         try:
             user_input = input("Input your query (or type 'exit' to quit): ")
-            
+
             # Exit condition
-            if user_input.strip() == "exit":
+            if user_input.strip().lower() == "exit":
                 break
-            
-            result = await Runner.run(triage_agent, user_input)
+
+            #result = await Runner.run(triage_agent, input=user_input)
+
+            result = Runner.run_streamed(
+                triage_agent,
+                input=user_input,
+            )
+
+            async for event in result.stream_events():
+                # 1) When the current agent changes (e.g. Triage -> Plant Matrix -> Planting Benefits)
+                if event.type == "agent_updated_stream_event":
+                    print(f"\n[Now using agent: {event.new_agent.name}]\n")
+
+                # 2) High-level items: messages, tool calls, tool outputs, etc.
+                elif event.type == "run_item_stream_event":
+                    item = event.item
+
+                    if item.type == "tool_call_item":
+                        print("\n[Tool was called]\n")
+
+                    elif item.type == "tool_call_output_item":
+                        print(f"\n[Tool output]: {item.output}\n")
+
+                    elif item.type == "message_output_item":
+                        # This is where you see the text from each agent
+                        text = ItemHelpers.text_message_output(item)
+                        agent_name = getattr(item.agent, "name", "Unknown agent")
+                        print(f"\n--- Message from {agent_name} ---\n{text}\n")
+
+            # Final answer
             print(result.final_output)
+
         except InputGuardrailTripwireTriggered as e:
             print("Guardrail blocked this input:", e)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

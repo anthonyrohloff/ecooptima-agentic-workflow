@@ -2,3 +2,4 @@ __pycache__/
 .venv/
 charts/
 response_log/
+.env

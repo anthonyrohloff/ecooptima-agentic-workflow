@@ -43,8 +43,8 @@ def _slugify_title(title: str) -> str:
 
 
 # Bar chart plotting function
-@function_tool(name_override="plot_tree_metric_bar_chart")
-def plot_tree_metric_bar_chart(
+@function_tool(name_override="plot_bar_chart")
+def plot_bar_chart(
     series: list[BarChartPoint],                                    # list of (label, value) pairs to chart
     metric_name: str,                                               # the name of the metric being charted (e.g., "Height", "Canopy Spread")
     title: str | None = None,                                       # optional chart title (from the agent, else default generated below)
@@ -117,8 +117,8 @@ def plot_tree_metric_bar_chart(
 
 
 # Pie chart plotting function
-@function_tool(name_override="plot_tree_metric_pie_chart")
-def plot_tree_metric_pie_chart(
+@function_tool(name_override="plot_pie_chart")
+def plot_pie_chart(
     series: list[PieChartPoint],                         # list of (label, value) pairs to chart
     metric_name: str,                                    # the name of the metric being charted (e.g., "Height", "Canopy Spread")
     title: str | None = None,                            # optional chart title (from the agent, else default generated below)
