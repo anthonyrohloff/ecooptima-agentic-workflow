@@ -9,8 +9,9 @@ Generated from open GitHub issues.
   
   The proposed structure is:
   
-  Input Agent -> Plant Matrix Agent -> Planting Benefits Agent -> Local ROI Agent -> Dashboard Agent
-  
+  Input Agent -> Plant Matrix Agent -> Planting Benefits Agent  -> Dashboard Agent
+                                                           \                                        /
+                                                              -> Local ROI Agent ->
   ---
   
   **Input Agent**
@@ -21,11 +22,25 @@ Generated from open GitHub issues.
   ---
   
   **Plant Matrix Agent**
-  This agent will give on the best plants to use from the plant matrix file given to it based on the user's query and the structured list of variables passed to it, enforcing species diversity and resilience. It will output a ranked list of species with fields for size, survival probability, maintenance costs, and benefit coefficients (carbon, stormwater, energy savings).
+  This agent will give on the best plants to use from the plant matrix file given to it based on the user's query and the structured list of variables passed to it, enforcing species diversity and resilience. It will output a ranked list of species with fields for size, survival probability, and maintenance costs.
   
   ---
   
-  *The descriptions of the rest of the agents is to be added to this issue later.*
+  **Planting Benefits Agent**
+  This agent will quantify environmental benefits (carbon, stormwater) based on planting plans.
+  
+  It should:
+  1. Estimate carbon sequestration and storage over time
+  2. Calculate stormwater interception and infiltration benefits
+  
+  ---
+  
+  **Local ROI Agent**
+  This agent will translate benefits into local ROI (health, heat) based on planting plans.
+  
+  It has 3 components:
+  1. Health Benefits: quantify air quality and well-being impacts
+  2. Heat Reduction: estimate localized cooling and cost savings
 
 - [#10] Update Plant Matrix
   Expand/recreate plant matrix file to contain:
