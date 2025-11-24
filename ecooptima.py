@@ -50,6 +50,26 @@ async def eco_optima_guardrail(ctx, agent, input_data):
 
 
 # Define specialist agents
+local_roi_agent = Agent(
+    name="Local ROI Advisor",
+    handoff_description="Specialist agent for translating benefits into local ROI (health, heat) based on planting plans.",
+    instructions="""Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
+                    island mitigation benefits based on adding canopy cover to an urban environment. Extrapolate this estimate to cost 
+                    savings on cooling costs for nearby buildings. 
+                    
+                    Return the finalized list to the user along with any charts or tables necessary to illustrate your points. Use the 
+                    plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of planting benefits.""" + postfix,
+    tools=[
+        FileSearchTool(
+            vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
+        ),
+        plot_bar_chart,
+        plot_pie_chart
+    ]
+)
+
+
+# Define specialist agents
 plant_benefits_agent = Agent(
     name="Planting Benefits Advisor",
     handoff_description="Specialist agent for quantifying planting benefits",
@@ -57,10 +77,10 @@ plant_benefits_agent = Agent(
                     of plants provided to you. Use the vector store file search tool to look up information about each plant 
                     given to you.
                     
-                    Return your answer to the user as a detailed report with quantified benefits for each plant species. Feel
-                    free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools you have access to.
-                    
-                    Always provide a rationale for your quantifications and cite relevant studies or data sources.""" + postfix,
+                    Add your input to the given list and hand it off to the local_roi_agent. Do not give a final response to the user. Feel
+                    free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools 
+                    you have access to.""" + postfix,
+    handoffs=[local_roi_agent],
     tools=[
         FileSearchTool(
             vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
@@ -81,10 +101,10 @@ plant_matrix_agent = Agent(
                     based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
                     (height, canopy spread, growth rate, etc.), call the appropriate charting tool first.
 
-                    Respond to the user with a ranked list of species, including size, survival probability, and maintenance costs.
+                    Create a ranked list of species, including size, survival probability, and maintenance costs.
 
-                    After you produce your ranked list, immediately hand off to the Planting Benefits Advisor, passing only the plant names (no other details).
-                    """ + postfix,
+                    After you produce your ranked list, immediately hand off to the Planting Benefits Advisor, passing only the list produced.
+                    Do not give a final response to the user.""" + postfix,
     output_type=PlantSelection,
     handoffs=[plant_benefits_agent], # TODO: it doesnt hand off for some reason - figure it out
     tools=[
