@@ -2,15 +2,24 @@ from agents import Agent, FileSearchTool, InputGuardrail, GuardrailFunctionOutpu
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
 from pydantic import BaseModel
+from pathlib import Path
+import os
 import asyncio
 
 
 # Import plotting tools
-from ecooptima_tools import plot_bar_chart, plot_pie_chart
+from ecooptima_tools import plot_bar_chart, plot_pie_chart, _generate_timestamp
 
 
 # Common postfix for agent instructions
 postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface. Always start your answer with your name."
+
+
+# Response logging structure
+class RunLog():
+    timestamp: str
+    input: str
+    response: str
 
 
 # TypedDict for guardrail output
@@ -49,7 +58,7 @@ plant_benefits_agent = Agent(
                     given to you.
                     
                     Return your answer to the user as a detailed report with quantified benefits for each plant species. Feel
-                    free to include tables and charts to illustrate your points if necessary.
+                    free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools you have access to.
                     
                     Always provide a rationale for your quantifications and cite relevant studies or data sources.""" + postfix,
     tools=[
@@ -121,40 +130,55 @@ async def main():
             if user_input.strip().lower() == "exit":
                 break
 
-            #result = await Runner.run(triage_agent, input=user_input)
+            RunLog.timestamp = _generate_timestamp()
+            log_dir = Path("response_log") / RunLog.timestamp
+            log_dir.mkdir(parents=True, exist_ok=True)
+            os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
-            result = Runner.run_streamed(
-                triage_agent,
-                input=user_input,
-            )
+            result = await Runner.run(triage_agent, input=user_input)
 
-            async for event in result.stream_events():
-                # 1) When the current agent changes (e.g. Triage -> Plant Matrix -> Planting Benefits)
-                if event.type == "agent_updated_stream_event":
-                    print(f"\n[Now using agent: {event.new_agent.name}]\n")
+            # Note: streamed execution is currently disabled due to some issues with the SDK.
+            # This is a good way to test, but may not work as expected in all cases.
+            # Use the non-streamed version above for reliable results.
+            
+            # result = Runner.run_streamed(
+            #     triage_agent,
+            #     input=user_input,
+            # )
 
-                # 2) High-level items: messages, tool calls, tool outputs, etc.
-                elif event.type == "run_item_stream_event":
-                    item = event.item
+            # async for event in result.stream_events():
+            #     # 1) When the current agent changes (e.g. Triage -> Plant Matrix -> Planting Benefits)
+            #     if event.type == "agent_updated_stream_event":
+            #         print(f"\n[Now using agent: {event.new_agent.name}]\n")
 
-                    if item.type == "tool_call_item":
-                        print("\n[Tool was called]\n")
+            #     # 2) High-level items: messages, tool calls, tool outputs, etc.
+            #     elif event.type == "run_item_stream_event":
+            #         item = event.item
 
-                    elif item.type == "tool_call_output_item":
-                        print(f"\n[Tool output]: {item.output}\n")
+            #         if item.type == "tool_call_item":
+            #             print("\n[Tool was called]\n")
 
-                    elif item.type == "message_output_item":
-                        # This is where you see the text from each agent
-                        text = ItemHelpers.text_message_output(item)
-                        agent_name = getattr(item.agent, "name", "Unknown agent")
-                        print(f"\n--- Message from {agent_name} ---\n{text}\n")
+            #         elif item.type == "tool_call_output_item":
+            #             print(f"\n[Tool output]: {item.output}\n")
+
+            #         elif item.type == "message_output_item":
+            #             # This is where you see the text from each agent
+            #             text = ItemHelpers.text_message_output(item)
+            #             agent_name = getattr(item.agent, "name", "Unknown agent")
+            #             print(f"\n--- Message from {agent_name} ---\n{text}\n")
 
             # Final answer
             print(result.final_output)
 
         except InputGuardrailTripwireTriggered as e:
             print("Guardrail blocked this input:", e)
-
+            continue
+        
+        # Log the run
+        RunLog.input = user_input
+        RunLog.response = result.final_output
+        (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
+        (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
 
 if __name__ == "__main__":
     asyncio.run(main())
