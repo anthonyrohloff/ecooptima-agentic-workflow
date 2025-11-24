@@ -68,15 +68,6 @@ Generated from open GitHub issues.
   
   The task at hand is to figure out how to have a conversation with the tree_advisor_agent and the other_plants_advisor_agent for as long as the user wants. Then, they should also be able to "reset" back to the start of the workflow if desired.
 
-- [#15] Log responses for easy review
-  The workflow's logs are able to be seen at https://platform.openai.com/logs, but to make it easy to see previous responses, we should implement a way to save the text response and charts from all agents.
-  
-  - Create a folder with the sligified title from ecooptima_tools.py
-  - Put .txt files for each agent response and any charts created in the folder
-  - Add top-level folder to .gitignore
-  
-  This will also help with #11 in that we will be able to easily see the information needed to solve that issue. Probably best to do this before #11.
-
 ## question
 
 - [#11] Experiment with ways to reduce cost
