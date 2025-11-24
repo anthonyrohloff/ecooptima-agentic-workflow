@@ -9,9 +9,8 @@ Generated from open GitHub issues.
   
   The proposed structure is:
   ```
-  Input Agent -> Plant Matrix Agent -> Planting Benefits Agent  -> Dashboard Agent
-                                       \                        /
-                                          -> Local ROI Agent ->
+  Input Agent -> Plant Matrix Agent -> Planting Benefits Agent  -> Local ROI Agent -> Dashboard Agent
+                                          
   ```
   
   ---
@@ -40,7 +39,7 @@ Generated from open GitHub issues.
   **Local ROI Agent**
   This agent will translate benefits into local ROI (health, heat) based on planting plans.
   
-  It has 3 components:
+  It should:
   1. Health Benefits: quantify air quality and well-being impacts
   2. Heat Reduction: estimate localized cooling and cost savings
 
