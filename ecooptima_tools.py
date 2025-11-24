@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -35,6 +36,8 @@ def _coerce_numeric(raw_value: float | int | str) -> float:
         raise ValueError(f"Could not extract a numeric value from '{raw_value}'.")
     return float(match.group())
 
+def _generate_timestamp() -> str:
+    return datetime.now().strftime("%Y%m%d-%H%M%S")
 
 # Helper to create a filesystem-safe slug from a title, like "Tree Height Comparison" -> "tree-height-comparison"
 def _slugify_title(title: str) -> str:
@@ -50,7 +53,7 @@ def plot_bar_chart(
     title: str | None = None,                                       # optional chart title (from the agent, else default generated below)
     top_n: int | None = None,                                       # number of top entries to include (top 10, top 5, etc.)
     orientation: Literal["horizontal", "vertical"] = "horizontal",  # chart orientation with default "horizontal" and option for "vertical" - no other options allowed
-    output_directory: str = "charts",                               # directory to save the chart image files
+    output_directory: str = "response_log",                         # directory to save the chart image files
 ) -> str:                                                           # should return a string path to the saved chart image file
     
     """Generate a bar chart from structured tree metrics."""
@@ -73,7 +76,7 @@ def plot_bar_chart(
         cleaned = cleaned[: max(1, top_n)]
 
     # Chart saving setup
-    chart_dir = Path(output_directory)
+    chart_dir = Path(os.environ.get("ECOOPTIMA_LOG_DIR", output_directory))
     chart_dir.mkdir(parents=True, exist_ok=True)
     safe_title = title or f"{metric_name} for selected trees"
     filename = f"{_slugify_title(safe_title)}-{datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
@@ -123,9 +126,9 @@ def plot_pie_chart(
     metric_name: str,                                    # the name of the metric being charted (e.g., "Height", "Canopy Spread")
     title: str | None = None,                            # optional chart title (from the agent, else default generated below)
     top_n: int | None = None,                            # number of top entries to include (top 10, top 5, etc.)
-    output_directory: str = "charts",                    # directory to save the chart image files
+    output_directory: str = "response_log",              # directory to save the chart image files
 ) -> str:                                                # should return a string path to the saved chart image file
-    
+        
     """Generate a pie chart from structured tree metrics."""
     # No data provided error
     if not series:
@@ -148,7 +151,7 @@ def plot_pie_chart(
         cleaned = kept + [("Other", other_value)]
 
     # Chart saving setup
-    chart_dir = Path(output_directory)
+    chart_dir = Path(os.environ.get("ECOOPTIMA_LOG_DIR", output_directory))
     chart_dir.mkdir(parents=True, exist_ok=True)
     safe_title = title or f"{metric_name} for selected trees" # default title if none provided
     filename = f"{_slugify_title(safe_title)}-{datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
