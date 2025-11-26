@@ -2,6 +2,11 @@
 
 Generated from open GitHub issues.
 
+## documentation
+
+- [#21] Fix setup instructions in README.md
+  README.md should recommend using "pip install openai-agents openai-agents[viz] matplotlib" instead of requirements.txt. Remove requirements.txt.
+
 ## enhancement
 
 - [#9] Follow Community_GPT_Agent_Structure document for MVP implementation
