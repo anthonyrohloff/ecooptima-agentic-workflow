@@ -1,4 +1,11 @@
-from agents import Agent, FileSearchTool, InputGuardrail, GuardrailFunctionOutput, Runner, ItemHelpers
+from agents import (
+    Agent,
+    FileSearchTool,
+    InputGuardrail,
+    GuardrailFunctionOutput,
+    Runner,
+    ItemHelpers,
+)
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
 from pydantic import BaseModel
@@ -16,7 +23,7 @@ postfix = " Provide your answer in plaintext with no bolding. The response is in
 
 
 # Response logging structure
-class RunLog():
+class RunLog:
     timestamp: str
     input: str
     response: str
@@ -24,8 +31,8 @@ class RunLog():
 
 # TypedDict for guardrail output
 class EcoOptimaOutput(BaseModel):
-    is_eco_optima: bool # whether the input is related to plants
-    reasoning: str      # reasoning for the determination
+    is_eco_optima: bool  # whether the input is related to plants
+    reasoning: str  # reasoning for the determination
 
 
 # Define guardrail agent: https://openai.github.io/openai-agents-python/guardrails/
@@ -38,9 +45,13 @@ guardrail_agent = Agent(
 
 # Define guardrail function
 async def eco_optima_guardrail(ctx, agent, input_data):
-    result = await Runner.run(guardrail_agent, input_data, context=ctx.context) # pass context to maintain conversation history [TODO: Enable "conversations" with agents - not just one-line interactions]
-                                                                                # although, guardrail checks may not need context - this should be investigated
-    final_output = result.final_output_as(EcoOptimaOutput) # parse final output as EcoOptimaOutput
+    result = await Runner.run(
+        guardrail_agent, input_data, context=ctx.context
+    )  # pass context to maintain conversation history [TODO: Enable "conversations" with agents - not just one-line interactions]
+    # although, guardrail checks may not need context - this should be investigated
+    final_output = result.final_output_as(
+        EcoOptimaOutput
+    )  # parse final output as EcoOptimaOutput
 
     # Check if tripwire was triggered and return appropriate GuardrailFunctionOutput
     return GuardrailFunctionOutput(
@@ -58,14 +69,17 @@ local_roi_agent = Agent(
                     savings on cooling costs for nearby buildings. 
                     
                     Return the finalized list to the user along with any charts or tables necessary to illustrate your points. Use the 
-                    plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of planting benefits.""" + postfix,
+                    plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of planting benefits."""
+    + postfix,
     tools=[
         FileSearchTool(
-            vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
+            vector_store_ids=[
+                "vs_6910105ece0c81918f2371e0f6c32696"
+            ]  # vector store ID for tree plant matrix
         ),
         plot_bar_chart,
-        plot_pie_chart
-    ]
+        plot_pie_chart,
+    ],
 )
 
 
@@ -79,20 +93,25 @@ plant_benefits_agent = Agent(
                     
                     Add your input to the given list and hand it off to the local_roi_agent. Do not give a final response to the user. Feel
                     free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools 
-                    you have access to.""" + postfix,
+                    you have access to."""
+    + postfix,
     handoffs=[local_roi_agent],
     tools=[
         FileSearchTool(
-            vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
+            vector_store_ids=[
+                "vs_6910105ece0c81918f2371e0f6c32696"
+            ]  # vector store ID for tree plant matrix
         ),
         plot_bar_chart,
-        plot_pie_chart
-    ]
+        plot_pie_chart,
+    ],
 )
+
 
 class PlantSelection(BaseModel):
     plants: list[str]
     notes: str
+
 
 plant_matrix_agent = Agent(
     name="Plant Matrix Advisor",
@@ -104,16 +123,21 @@ plant_matrix_agent = Agent(
                     Create a ranked list of species, including size, survival probability, and maintenance costs.
 
                     After you produce your ranked list, immediately hand off to the Planting Benefits Advisor, passing only the list produced.
-                    Do not give a final response to the user.""" + postfix,
+                    Do not give a final response to the user."""
+    + postfix,
     output_type=PlantSelection,
-    handoffs=[plant_benefits_agent], # TODO: it doesnt hand off for some reason - figure it out
+    handoffs=[
+        plant_benefits_agent
+    ],  # TODO: it doesnt hand off for some reason - figure it out
     tools=[
         FileSearchTool(
-            vector_store_ids=["vs_6910105ece0c81918f2371e0f6c32696"] # vector store ID for tree plant matrix
+            vector_store_ids=[
+                "vs_6910105ece0c81918f2371e0f6c32696"
+            ]  # vector store ID for tree plant matrix
         ),
         plot_bar_chart,
-        plot_pie_chart
-    ]
+        plot_pie_chart,
+    ],
 )
 
 
@@ -131,7 +155,9 @@ triage_agent = Agent(
                     """,
     handoffs=[plant_matrix_agent],
     input_guardrails=[
-        InputGuardrail(guardrail_function=eco_optima_guardrail), # attach the eco_optima_guardrail to the triage agent
+        InputGuardrail(
+            guardrail_function=eco_optima_guardrail
+        ),  # attach the eco_optima_guardrail to the triage agent
     ],
 )
 
@@ -141,10 +167,10 @@ draw_graph(triage_agent, filename="agent_graph")
 
 
 # Main function to run the agent
-async def main():
+async def main(user_text):
     while True:
         try:
-            user_input = input("Input your query (or type 'exit' to quit): ")
+            user_input = user_text
 
             # Exit condition
             if user_input.strip().lower() == "exit":
@@ -160,7 +186,7 @@ async def main():
             # Note: streamed execution is currently disabled due to some issues with the SDK.
             # This is a good way to test, but may not work as expected in all cases.
             # Use the non-streamed version above for reliable results.
-            
+
             # result = Runner.run_streamed(
             #     triage_agent,
             #     input=user_input,
@@ -189,16 +215,19 @@ async def main():
 
             # Final answer
             print(result.final_output)
+            return result.final_output
 
         except InputGuardrailTripwireTriggered as e:
             print("Guardrail blocked this input:", e)
-            continue
-        
+            return str(e)
+
         # Log the run
+        # TODO: fix logging - we don't get any now that we return stuff in this function
         RunLog.input = user_input
         RunLog.response = result.final_output
         (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
         (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
