@@ -17,6 +17,7 @@ This repo hosts a prototype of this framework with the structure in the graph be
 *Current Agent Structure*
 
 This workflow is able to:
+
 - Take in a user query in the terminal
 - Use a guardrail to reject off-topic question
 - Triage the query and hand it off to a specialized response agent
@@ -29,13 +30,13 @@ To run this code on your machine, complete the following steps:
 
 1. Clone this repo with `git clone https://github.com/anthonyrohloff/ecooptima-agentic-workflow.git`.
 
-2. Create a Python virtual environment and run `pip install -r requirements.txt`.
+2. Create a Python virtual environment and run `pip install openai-agents openai-agents[viz] graphviz matplotlib`.
 
 3. Set your OpenAI API key in the terminal with `export OPENAI_API_KEY=sk-...`.
 
 4. Install [Graphviz](https://graphviz.org/download/).
 
-5. Run the **ecooptima.py** file and try it out!
+5. Run the **app.py** file and try it out!
 
 ## Contributing
 
