@@ -21,6 +21,9 @@ from ecooptima_tools import plot_bar_chart, plot_pie_chart, _generate_timestamp
 # Common postfix for agent instructions
 postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface. Always start your answer with your name."
 
+# Model each acgent will use
+agent_model = "gpt-5-nano"
+
 
 # Response logging structure
 class RunLog:
@@ -38,7 +41,8 @@ class EcoOptimaOutput(BaseModel):
 # Define guardrail agent: https://openai.github.io/openai-agents-python/guardrails/
 guardrail_agent = Agent(
     name="Guardrail check",
-    instructions="Check if the user is asking about plants, unless the question is referencing a previous message.",
+    model=agent_model,
+    instructions="Check if the user is asking about plants. Output a one sentence response classifying it as related to EcoOptima or not.",
     output_type=EcoOptimaOutput,
 )
 
@@ -63,6 +67,7 @@ async def eco_optima_guardrail(ctx, agent, input_data):
 # Define specialist agents
 local_roi_agent = Agent(
     name="Local ROI Advisor",
+    model=agent_model,
     handoff_description="Specialist agent for translating benefits into local ROI (health, heat) based on planting plans.",
     instructions="""Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
                     island mitigation benefits based on adding canopy cover to an urban environment. Extrapolate this estimate to cost 
@@ -86,6 +91,7 @@ local_roi_agent = Agent(
 # Define specialist agents
 plant_benefits_agent = Agent(
     name="Planting Benefits Advisor",
+    model=agent_model,
     handoff_description="Specialist agent for quantifying planting benefits",
     instructions="""You quantify the environmental benefits (carbon sequestration and stormwater inception) for the list
                     of plants provided to you. Use the vector store file search tool to look up information about each plant 
@@ -115,6 +121,7 @@ class PlantSelection(BaseModel):
 
 plant_matrix_agent = Agent(
     name="Plant Matrix Advisor",
+    model=agent_model,
     handoff_description="Specialist agent for plant matrix",
     instructions="""You recommend the best plant species from the provided plant matrix, using only the FileSearchTool (no internet sources), 
                     based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
@@ -144,6 +151,7 @@ plant_matrix_agent = Agent(
 # Define triage agent
 triage_agent = Agent(
     name="Triage Agent",
+    model=agent_model,
     instructions="""You use the given query and map it to the following variables (leave any variables that are not mentioned in the query blank):
                     user_location = Cincinnati, Ohio
                     project_type = [what the desired project is (tiny forest, street trees, schoolyard, etc...)]
@@ -151,7 +159,7 @@ triage_agent = Agent(
                     time_horizon_years = [how long the user wants project SETUP will take, not including continuous maintenance]
                     budget = [total budget for project]
                     
-                    Then, pass these variables to the plant_matrix_agent.
+                    Then, pass any variables you fill to the plant_matrix_agent.
                     """,
     handoffs=[plant_matrix_agent],
     input_guardrails=[
