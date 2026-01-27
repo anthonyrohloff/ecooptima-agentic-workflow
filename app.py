@@ -1,21 +1,41 @@
 import ecooptima
-from flask import Flask, request, render_template_string
-from ecooptima import main
+from flask import Flask, request, render_template, url_for, jsonify, send_from_directory
 import asyncio
+import os
+from pathlib import Path
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def home():
-    return open("index.html").read()
+    return render_template("index.html")
 
 
 @app.route("/response", methods=["POST"])
 def workFlowRoute():
     user_text = request.form["userInput"]
     result = asyncio.run(ecooptima.main(user_text))
-    return result
+
+    img_urls = []
+    folder_env = os.environ.get("ECOOPTIMA_LOG_DIR")
+    if folder_env:
+        folder = Path(folder_env)
+        if folder.exists():
+            for p in sorted(folder.iterdir()):
+                if p.suffix.lower() == ".png":
+                    img_urls.append(
+                        url_for(
+                            "response_log_file",
+                            filename=f"{folder.name}/{p.name}",
+                        )
+                    )
+    return jsonify({"result": result, "img_urls": img_urls})
+
+
+@app.route("/response_log/<path:filename>")
+def response_log_file(filename: str):
+    return send_from_directory("response_log", filename)
 
 
 if __name__ == "__main__":

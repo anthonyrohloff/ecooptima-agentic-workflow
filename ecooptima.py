@@ -4,7 +4,6 @@ from agents import (
     InputGuardrail,
     GuardrailFunctionOutput,
     Runner,
-    ItemHelpers,
 )
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
@@ -19,7 +18,7 @@ from ecooptima_tools import plot_bar_chart, plot_pie_chart, _generate_timestamp
 
 
 # Common postfix for agent instructions
-postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface. Always start your answer with your name."
+postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface. Always start your answer with your name. Do not ask any follow-up questions in your response."
 
 # Model each acgent will use
 agent_model = "gpt-5-nano"
@@ -36,6 +35,25 @@ class RunLog:
 class EcoOptimaOutput(BaseModel):
     is_eco_optima: bool  # whether the input is related to plants
     reasoning: str  # reasoning for the determination
+
+
+# Agent output models
+class TriageVariables(BaseModel):
+    user_location: str | None = None
+    project_type: str | None = None
+    scale: str | None = None
+    time_horizon_years: str | None = None
+    budget: str | None = None
+
+
+class PlantBenefit(BaseModel):
+    plant: str
+    benefits: str
+
+
+class PlantBenefits(BaseModel):
+    benefits_by_plant: list[PlantBenefit]
+    assumptions: str | None = None
 
 
 # Define guardrail agent: https://openai.github.io/openai-agents-python/guardrails/
@@ -97,11 +115,12 @@ plant_benefits_agent = Agent(
                     of plants provided to you. Use the vector store file search tool to look up information about each plant 
                     given to you.
                     
-                    Add your input to the given list and hand it off to the local_roi_agent. Do not give a final response to the user. Feel
+                    Add your input to the given list. Provide benefits_by_plant as a list of {plant, benefits} objects.
+                    Do not give a final response to the user. Feel
                     free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools 
                     you have access to."""
     + postfix,
-    handoffs=[local_roi_agent],
+    output_type=PlantBenefits,
     tools=[
         FileSearchTool(
             vector_store_ids=[
@@ -129,13 +148,9 @@ plant_matrix_agent = Agent(
 
                     Create a ranked list of species, including size, survival probability, and maintenance costs.
 
-                    After you produce your ranked list, immediately hand off to the Planting Benefits Advisor, passing only the list produced.
-                    Do not give a final response to the user."""
+                    After you produce your ranked list, stop. Do not give a final response to the user."""
     + postfix,
     output_type=PlantSelection,
-    handoffs=[
-        plant_benefits_agent
-    ],  # TODO: it doesnt hand off for some reason - figure it out
     tools=[
         FileSearchTool(
             vector_store_ids=[
@@ -159,9 +174,9 @@ triage_agent = Agent(
                     time_horizon_years = [how long the user wants project SETUP will take, not including continuous maintenance]
                     budget = [total budget for project]
                     
-                    Then, pass any variables you fill to the plant_matrix_agent.
+                    Then, stop. Do not give a final response to the user.
                     """,
-    handoffs=[plant_matrix_agent],
+    output_type=TriageVariables,
     input_guardrails=[
         InputGuardrail(
             guardrail_function=eco_optima_guardrail
@@ -189,7 +204,28 @@ async def main(user_text):
             log_dir.mkdir(parents=True, exist_ok=True)
             os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
-            result = await Runner.run(triage_agent, input=user_input)
+            triage_result = await Runner.run(triage_agent, input=user_input)
+            triage_output = triage_result.final_output_as(
+                TriageVariables, raise_if_incorrect_type=True
+            )
+
+            plant_matrix_result = await Runner.run(
+                plant_matrix_agent, input=triage_output.model_dump_json()
+            )
+            plant_matrix_output = plant_matrix_result.final_output_as(
+                PlantSelection, raise_if_incorrect_type=True
+            )
+
+            plant_benefits_result = await Runner.run(
+                plant_benefits_agent, input=plant_matrix_output.model_dump_json()
+            )
+            plant_benefits_output = plant_benefits_result.final_output_as(
+                PlantBenefits, raise_if_incorrect_type=True
+            )
+
+            result = await Runner.run(
+                local_roi_agent, input=plant_benefits_output.model_dump_json()
+            )
 
             # Note: streamed execution is currently disabled due to some issues with the SDK.
             # This is a good way to test, but may not work as expected in all cases.
@@ -222,6 +258,10 @@ async def main(user_text):
             #             print(f"\n--- Message from {agent_name} ---\n{text}\n")
 
             # Final answer
+            if result.last_agent.name != local_roi_agent.name:
+                raise RuntimeError(
+                    f"Expected final agent {local_roi_agent.name}, got {result.last_agent.name}"
+                )
             print(result.final_output)
             return result.final_output
 
@@ -237,5 +277,6 @@ async def main(user_text):
         (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
 
 
-# if __name__ == "__main__":
-#     asyncio.run(main())
+if __name__ == "__main__":
+    input = input("Query: ")
+    asyncio.run(main(input))

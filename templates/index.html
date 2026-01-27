@@ -21,6 +21,8 @@
   
   <div id="response"></div>
   
+  <div id="charts"></div>
+
   <script>
   function sendToFlask() {
       var input = document.getElementById("userInput").value;
@@ -31,7 +33,19 @@
   
       xhr.onreadystatechange = function() {
           if (xhr.readyState === 4 && xhr.status === 200) {
-              document.getElementById("response").innerText = xhr.responseText;
+              var data = JSON.parse(xhr.responseText);
+              document.getElementById("response").innerText = data.result;
+
+              var charts = document.getElementById("charts");
+              charts.innerHTML = "";
+              (data.img_urls || []).forEach(function(src, idx) {
+                  var img = document.createElement("img");
+                  img.src = src;
+                  img.alt = "chart " + (idx + 1);
+                  img.style.maxWidth = "100%";
+                  img.style.height = "auto";
+                  charts.appendChild(img);
+              });
           }
       };
   
