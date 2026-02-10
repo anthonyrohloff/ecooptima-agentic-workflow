@@ -4,9 +4,13 @@ from agents import (
     InputGuardrail,
     GuardrailFunctionOutput,
     Runner,
+    RunContextWrapper,
+    handoff,
+    AgentOutputSchema,
 )
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
+from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from pydantic import BaseModel
 from pathlib import Path
 import os
@@ -17,63 +21,169 @@ import asyncio
 from ecooptima_tools import plot_bar_chart, plot_pie_chart, _generate_timestamp
 
 
-# Common postfix for agent instructions
-postfix = " Provide your answer in plaintext with no bolding. The response is intended for a terminal interface. Always start your answer with your name. Do not ask any follow-up questions in your response."
+###############
+### GLOBALS ###
+###############
+
 
 # Model each acgent will use
 agent_model = "gpt-5-nano"
 
+# Vector store ID for the plant matrix file on the OpenAI Platform
+plant_matrix_vector_store = "vs_6910105ece0c81918f2371e0f6c32696"
 
-# Response logging structure
-class RunLog:
-    timestamp: str
-    input: str
-    response: str
+
+# Optional function to perform an action on handoff - keeping as an example for now
+async def on_handoff(ctx: RunContextWrapper[None], input_data):
+    print(input_data)
+
+
+# Structured output base class
+# Used by plant_matrix_agent and extended by planting_benefits_agent
+class RankedSpecies(BaseModel):
+    species: str
+    size: str
+    survivial_probability: str
+    maintenance_costs: str
+
+
+#######################
+### LOCAL ROI AGENT ###
+#######################
+
+
+class RankedSpeciesForROI(RankedSpecies):
+    carbon_sequestration: str
+    stormwater_inception: str
+    heat_island_mitigation: str
+    air_quality_benefit: str
+    well_being_benefit: str
+    cooling_cost_savings: str
+
+
+class LocalROIResult(BaseModel):
+    rankings: list[RankedSpeciesForROI]
+
+
+local_roi_agent = Agent(
+    name="Local ROI Advisor",
+    model=agent_model,
+    instructions=f"""{RECOMMENDED_PROMPT_PREFIX}
+                    Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
+                    island mitigation benefits based on adding canopy cover to an urban environment. Extrapolate this estimate to cost 
+                    savings on cooling costs for nearby buildings. 
+
+                    Add these values to the provided list and return it to the user along with any charts or tables necessary to illustrate 
+                    your points. Use the plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of local ROI.""",
+    output_type=LocalROIResult,
+    tools=[
+        FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
+        plot_bar_chart,
+        plot_pie_chart,
+    ],
+)
+
+
+###############################
+### PLANTING BENEFITS AGENT ###
+###############################
+
+
+class RankedSpeciesForBenefits(RankedSpecies):
+    carbon_sequestration: str
+    stormwater_inception: str
+
+
+class PlantingBenefitsResult(BaseModel):
+    rankings: list[RankedSpeciesForBenefits]
+
+
+local_roi_handoff = handoff(
+    agent=local_roi_agent, on_handoff=on_handoff, input_type=PlantingBenefitsResult
+)
+
+
+plant_benefits_agent = Agent(
+    name="Planting Benefits Advisor",
+    model=agent_model,
+    instructions=f"""{RECOMMENDED_PROMPT_PREFIX} 
+                    You quantify the environmental benefits (carbon sequestration and stormwater inception) for the list
+                    of plants provided to you. Use the vector store file search tool to look up information about each plant 
+                    given to you.
+
+                    Feel free to include tables and charts to illustrate your points if necessary by using 
+                    the plot_bar_chart and plot_pie_chart tools you have access to.
+                    Do NOT answer the user. Your ONLY output must be a single call to local_roi_handoff. After the tool call, stop.
+                    Do NOT give a status update like 'request handed off to local roi agent.'""",
+    tools=[
+        FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
+        plot_bar_chart,
+        plot_pie_chart,
+    ],
+    handoffs=[local_roi_handoff],
+)
+
+
+##########################
+### PLANT MATRIX AGENT ###
+##########################
+
+
+class PlantMatrixResult(BaseModel):
+    rankings: list[RankedSpecies]
+
+
+planting_benefits_handoff = handoff(
+    agent=plant_benefits_agent, on_handoff=on_handoff, input_type=PlantMatrixResult
+)
+
+plant_matrix_agent = Agent(
+    name="Plant Matrix Advisor",
+    model=agent_model,
+    handoff_description="Specialist agent for plant matrix",
+    instructions="""You recommend the best plant species from the provided plant matrix by using the FileSearchTool at least once
+                    based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
+                    (height, canopy spread, growth rate, etc.), call the appropriate charting tool first.
+
+                    Create a ranked list of species, including size, survival probability, and maintenance costs.
+
+                    Do NOT answer the user. Your ONLY output must be a single call to planting_benefits_handoff. After the tool call, stop.
+                    Do NOT give a status update like 'request handed off to planting benefits advisor.'""",
+    tools=[
+        FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
+        plot_bar_chart,
+        plot_pie_chart,
+    ],
+    handoffs=[planting_benefits_handoff],
+)
+
+
+#######################
+### GUARDRAIL AGENT ###
+#######################
 
 
 # TypedDict for guardrail output
-class EcoOptimaOutput(BaseModel):
+class GuardrailOutput(BaseModel):
     is_eco_optima: bool  # whether the input is related to plants
     reasoning: str  # reasoning for the determination
 
 
-# Agent output models
-class TriageVariables(BaseModel):
-    user_location: str | None = None
-    project_type: str | None = None
-    scale: str | None = None
-    time_horizon_years: str | None = None
-    budget: str | None = None
-
-
-class PlantBenefit(BaseModel):
-    plant: str
-    benefits: str
-
-
-class PlantBenefits(BaseModel):
-    benefits_by_plant: list[PlantBenefit]
-    assumptions: str | None = None
-
-
-# Define guardrail agent: https://openai.github.io/openai-agents-python/guardrails/
+# Define guardrail sub-agent: https://openai.github.io/openai-agents-python/guardrails/
 guardrail_agent = Agent(
-    name="Guardrail check",
+    name="Guardrail",
     model=agent_model,
-    instructions="Check if the user is asking about plants. Output a one sentence response classifying it as related to EcoOptima or not.",
-    output_type=EcoOptimaOutput,
+    instructions="""Check if the user is asking about plants. 
+                    Output a one sentence response classifying it as related to EcoOptima 
+                    or not and a boolean value accordingly.""",
+    output_type=GuardrailOutput,
 )
 
 
-# Define guardrail function
+# Define guardrail function to be called by the triage_agent
 async def eco_optima_guardrail(ctx, agent, input_data):
-    result = await Runner.run(
-        guardrail_agent, input_data, context=ctx.context
-    )  # pass context to maintain conversation history [TODO: Enable "conversations" with agents - not just one-line interactions]
-    # although, guardrail checks may not need context - this should be investigated
-    final_output = result.final_output_as(
-        EcoOptimaOutput
-    )  # parse final output as EcoOptimaOutput
+    result = await Runner.run(guardrail_agent, input_data)
+    final_output = result.final_output_as(GuardrailOutput)
 
     # Check if tripwire was triggered and return appropriate GuardrailFunctionOutput
     return GuardrailFunctionOutput(
@@ -82,84 +192,23 @@ async def eco_optima_guardrail(ctx, agent, input_data):
     )
 
 
-# Define specialist agents
-local_roi_agent = Agent(
-    name="Local ROI Advisor",
-    model=agent_model,
-    handoff_description="Specialist agent for translating benefits into local ROI (health, heat) based on planting plans.",
-    instructions="""Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
-                    island mitigation benefits based on adding canopy cover to an urban environment. Extrapolate this estimate to cost 
-                    savings on cooling costs for nearby buildings. 
-                    
-                    Return the finalized list to the user along with any charts or tables necessary to illustrate your points. Use the 
-                    plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of planting benefits."""
-    + postfix,
-    tools=[
-        FileSearchTool(
-            vector_store_ids=[
-                "vs_6910105ece0c81918f2371e0f6c32696"
-            ]  # vector store ID for tree plant matrix
-        ),
-        plot_bar_chart,
-        plot_pie_chart,
-    ],
-)
+####################
+### TRIAGE AGENT ###
+####################
 
 
-# Define specialist agents
-plant_benefits_agent = Agent(
-    name="Planting Benefits Advisor",
-    model=agent_model,
-    handoff_description="Specialist agent for quantifying planting benefits",
-    instructions="""You quantify the environmental benefits (carbon sequestration and stormwater inception) for the list
-                    of plants provided to you. Use the vector store file search tool to look up information about each plant 
-                    given to you.
-                    
-                    Add your input to the given list. Provide benefits_by_plant as a list of {plant, benefits} objects.
-                    Do not give a final response to the user. Feel
-                    free to include tables and charts to illustrate your points if necessary by using the plot_bar_chart and plot_pie_chart tools 
-                    you have access to."""
-    + postfix,
-    output_type=PlantBenefits,
-    tools=[
-        FileSearchTool(
-            vector_store_ids=[
-                "vs_6910105ece0c81918f2371e0f6c32696"
-            ]  # vector store ID for tree plant matrix
-        ),
-        plot_bar_chart,
-        plot_pie_chart,
-    ],
-)
+# Output structure to pass to plant_matrix_agent
+class InputVariables(BaseModel):
+    user_location: str | None = None
+    project_type: str | None = None
+    scale: str | None = None
+    time_horizon_years: str | None = None
+    budget: str | None = None
 
 
-class PlantSelection(BaseModel):
-    plants: list[str]
-    notes: str
-
-
-plant_matrix_agent = Agent(
-    name="Plant Matrix Advisor",
-    model=agent_model,
-    handoff_description="Specialist agent for plant matrix",
-    instructions="""You recommend the best plant species from the provided plant matrix, using only the FileSearchTool (no internet sources), 
-                    based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
-                    (height, canopy spread, growth rate, etc.), call the appropriate charting tool first.
-
-                    Create a ranked list of species, including size, survival probability, and maintenance costs.
-
-                    After you produce your ranked list, stop. Do not give a final response to the user."""
-    + postfix,
-    output_type=PlantSelection,
-    tools=[
-        FileSearchTool(
-            vector_store_ids=[
-                "vs_6910105ece0c81918f2371e0f6c32696"
-            ]  # vector store ID for tree plant matrix
-        ),
-        plot_bar_chart,
-        plot_pie_chart,
-    ],
+# Handoff object to execute information relay
+plant_matrix_handoff = handoff(
+    agent=plant_matrix_agent, on_handoff=on_handoff, input_type=InputVariables
 )
 
 
@@ -173,20 +222,32 @@ triage_agent = Agent(
                     scale = [size of project (for a park, a neighborhood, a city, a university, etc...)]
                     time_horizon_years = [how long the user wants project SETUP will take, not including continuous maintenance]
                     budget = [total budget for project]
-                    
-                    Then, stop. Do not give a final response to the user.
-                    """,
-    output_type=TriageVariables,
-    input_guardrails=[
-        InputGuardrail(
-            guardrail_function=eco_optima_guardrail
-        ),  # attach the eco_optima_guardrail to the triage agent
-    ],
+
+                    Then, call the plant_matrix_handoff tool to pass the information to the next agent. Do not give a final response
+                    to the user.""",
+    input_guardrails=[InputGuardrail(guardrail_function=eco_optima_guardrail)],
+    handoffs=[plant_matrix_handoff],
 )
+
+############################
+### GRAPHVIZ AND LOGGING ###
+############################
 
 
 # Visualize agent graph using Graphviz: https://openai.github.io/openai-agents-python/visualization/
 draw_graph(triage_agent, filename="agent_graph")
+
+
+# Response logging structure
+# class RunLog:
+#    timestamp: str
+#    input: str
+#    response: str
+
+
+#####################
+### MAIN FUNCTION ###
+#####################
 
 
 # Main function to run the agent
@@ -199,84 +260,27 @@ async def main(user_text):
             if user_input.strip().lower() == "exit":
                 break
 
-            RunLog.timestamp = _generate_timestamp()
-            log_dir = Path("response_log") / RunLog.timestamp
-            log_dir.mkdir(parents=True, exist_ok=True)
-            os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
+            # RunLog.timestamp = _generate_timestamp()
+            # log_dir = Path("response_log") / RunLog.timestamp
+            # log_dir.mkdir(parents=True, exist_ok=True)
+            # os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
-            triage_result = await Runner.run(triage_agent, input=user_input)
-            triage_output = triage_result.final_output_as(
-                TriageVariables, raise_if_incorrect_type=True
-            )
-
-            plant_matrix_result = await Runner.run(
-                plant_matrix_agent, input=triage_output.model_dump_json()
-            )
-            plant_matrix_output = plant_matrix_result.final_output_as(
-                PlantSelection, raise_if_incorrect_type=True
-            )
-
-            plant_benefits_result = await Runner.run(
-                plant_benefits_agent, input=plant_matrix_output.model_dump_json()
-            )
-            plant_benefits_output = plant_benefits_result.final_output_as(
-                PlantBenefits, raise_if_incorrect_type=True
-            )
-
-            result = await Runner.run(
-                local_roi_agent, input=plant_benefits_output.model_dump_json()
-            )
-
-            # Note: streamed execution is currently disabled due to some issues with the SDK.
-            # This is a good way to test, but may not work as expected in all cases.
-            # Use the non-streamed version above for reliable results.
-
-            # result = Runner.run_streamed(
-            #     triage_agent,
-            #     input=user_input,
-            # )
-
-            # async for event in result.stream_events():
-            #     # 1) When the current agent changes (e.g. Triage -> Plant Matrix -> Planting Benefits)
-            #     if event.type == "agent_updated_stream_event":
-            #         print(f"\n[Now using agent: {event.new_agent.name}]\n")
-
-            #     # 2) High-level items: messages, tool calls, tool outputs, etc.
-            #     elif event.type == "run_item_stream_event":
-            #         item = event.item
-
-            #         if item.type == "tool_call_item":
-            #             print("\n[Tool was called]\n")
-
-            #         elif item.type == "tool_call_output_item":
-            #             print(f"\n[Tool output]: {item.output}\n")
-
-            #         elif item.type == "message_output_item":
-            #             # This is where you see the text from each agent
-            #             text = ItemHelpers.text_message_output(item)
-            #             agent_name = getattr(item.agent, "name", "Unknown agent")
-            #             print(f"\n--- Message from {agent_name} ---\n{text}\n")
-
-            # Final answer
-            if result.last_agent.name != local_roi_agent.name:
-                raise RuntimeError(
-                    f"Expected final agent {local_roi_agent.name}, got {result.last_agent.name}"
-                )
-            print(result.final_output)
+            result = await Runner.run(triage_agent, user_input)
+            print(result)
             return result.final_output
 
         except InputGuardrailTripwireTriggered as e:
-            print("Guardrail blocked this input:", e)
+            print("Guardrail blocked this input: ", e)
             return str(e)
 
         # Log the run
-        # TODO: fix logging - we don't get any now that we return stuff in this function
-        RunLog.input = user_input
-        RunLog.response = result.final_output
-        (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
-        (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
+        #        RunLog.input = user_input
+        #        RunLog.response = result.final_output
+        #        (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
+        #        (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
 
 
 if __name__ == "__main__":
     input = input("Query: ")
-    asyncio.run(main(input))
+    result = asyncio.run(main(input))
+    print(result)
