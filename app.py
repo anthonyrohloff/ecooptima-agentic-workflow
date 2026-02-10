@@ -17,6 +17,11 @@ def workFlowRoute():
     user_text = request.form["userInput"]
     result = asyncio.run(ecooptima.main(user_text))
 
+    if hasattr(result, "model_dump"):  # Pydantic v2
+        result = result.model_dump()
+    elif hasattr(result, "dict"):  # Pydantic v1 fallback
+        result = result.dict()
+
     img_urls = []
     folder_env = os.environ.get("ECOOPTIMA_LOG_DIR")
     if folder_env:
@@ -25,11 +30,9 @@ def workFlowRoute():
             for p in sorted(folder.iterdir()):
                 if p.suffix.lower() == ".png":
                     img_urls.append(
-                        url_for(
-                            "response_log_file",
-                            filename=f"{folder.name}/{p.name}",
-                        )
+                        url_for("response_log_file", filename=f"{folder.name}/{p.name}")
                     )
+
     return jsonify({"result": result, "img_urls": img_urls})
 
 
