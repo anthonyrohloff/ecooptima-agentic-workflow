@@ -16,12 +16,6 @@ def home():
 def workFlowRoute():
     user_text = request.form["userInput"]
     result = asyncio.run(ecooptima.main(user_text))
-
-    if hasattr(result, "model_dump"):  # Pydantic v2
-        result = result.model_dump()
-    elif hasattr(result, "dict"):  # Pydantic v1 fallback
-        result = result.dict()
-
     img_urls = []
     folder_env = os.environ.get("ECOOPTIMA_LOG_DIR")
     if folder_env:
