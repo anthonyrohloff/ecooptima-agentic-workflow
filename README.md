@@ -14,6 +14,7 @@ implementation.
 This repo hosts a prototype of this framework with the structure in the graph below:
 
 ![Current Agent Structure](agent_graph.png)
+
 *Current Agent Structure*
 
 This workflow is able to:
