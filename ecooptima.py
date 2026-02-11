@@ -6,19 +6,16 @@ from agents import (
     Runner,
     RunContextWrapper,
     handoff,
-    AgentOutputSchema,
 )
 from agents.exceptions import InputGuardrailTripwireTriggered
 from agents.extensions.visualization import draw_graph
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from pydantic import BaseModel
-from pathlib import Path
-import os
 import asyncio
 
 
 # Import plotting tools
-from ecooptima_tools import plot_bar_chart, plot_pie_chart, _generate_timestamp
+from ecooptima_tools import plot_bar_chart  # , plot_pie_chart, _generate_timestamp
 
 
 ###############
@@ -74,12 +71,12 @@ local_roi_agent = Agent(
                     savings on cooling costs for nearby buildings. 
 
                     Add these values to the provided list and return it to the user along with any charts or tables necessary to illustrate 
-                    your points. Use the plot_bar_chart and plot_pie_chart tools as necessary to visualize comparisons of local ROI.""",
+                    your points. Use the plot_bar_chart tool as necessary to visualize comparisons of local ROI.""",
     output_type=LocalROIResult,
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
         plot_bar_chart,
-        plot_pie_chart,
+        # plot_pie_chart,
     ],
 )
 
@@ -112,13 +109,13 @@ plant_benefits_agent = Agent(
                     given to you.
 
                     Feel free to include tables and charts to illustrate your points if necessary by using 
-                    the plot_bar_chart and plot_pie_chart tools you have access to.
+                    the plot_bar_chart tool you have access to.
                     Do NOT answer the user. Your ONLY output must be a single call to local_roi_handoff. After the tool call, stop.
                     Do NOT give a status update like 'request handed off to local roi agent.'""",
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
         plot_bar_chart,
-        plot_pie_chart,
+        # plot_pie_chart,
     ],
     handoffs=[local_roi_handoff],
 )
@@ -142,8 +139,9 @@ plant_matrix_agent = Agent(
     model=agent_model,
     handoff_description="Specialist agent for plant matrix",
     instructions="""You recommend the best plant species from the provided plant matrix by using the FileSearchTool at least once
-                    based on the structured variables you receive. Enforce species diversity and resilience. When numeric comparisons are requested 
-                    (height, canopy spread, growth rate, etc.), call the appropriate charting tool first.
+                    based on the structured variables you receive. Enforce species diversity and resilience.
+
+                    You can use the plot_bar_chart tool if you think it would help the user understand your choices.
 
                     Create a ranked list of species, including size, survival probability, and maintenance costs.
 
@@ -152,7 +150,7 @@ plant_matrix_agent = Agent(
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
         plot_bar_chart,
-        plot_pie_chart,
+        # plot_pie_chart,
     ],
     handoffs=[planting_benefits_handoff],
 )

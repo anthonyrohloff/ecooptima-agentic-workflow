@@ -1,4 +1,7 @@
 __pycache__/
 .venv/
 response_log/
-.env
+pyrightconfig.json
+start.sh
+.token
+query.sh
