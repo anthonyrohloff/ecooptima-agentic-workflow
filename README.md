@@ -33,7 +33,7 @@ To run this code on your machine, complete the following steps:
 
 2. Create a Python virtual environment and run `pip install openai-agents openai-agents[viz] graphviz matplotlib`.
 
-3. Set your OpenAI API key in the terminal with `export OPENAI_API_KEY=sk-...`.
+3. Set your OpenAI API key in the terminal with `export OPENAI_API_KEY=sk-...` (on Linux).
 
 4. Install [Graphviz](https://graphviz.org/download/).
 
