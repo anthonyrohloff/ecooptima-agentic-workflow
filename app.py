@@ -11,10 +11,13 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
+@app.route("/community")
+def community():
+    return render_template("community.html")
 
 @app.route("/response", methods=["POST"])
 def workFlowRoute():
-    user_text = request.form["userInput"]
+    user_text = request.form.get("userInput", "")
     result = asyncio.run(ecooptima.main(user_text))
 
     if hasattr(result, "model_dump"):  # Pydantic v2
@@ -30,8 +33,7 @@ def workFlowRoute():
             for p in sorted(folder.iterdir()):
                 if p.suffix.lower() == ".png":
                     img_urls.append(
-                        url_for("response_log_file", filename=f"{folder.name}/{p.name}")
-                    )
+                        url_for("response_log_file", filename=p.name))
 
     return jsonify({"result": result, "img_urls": img_urls})
 

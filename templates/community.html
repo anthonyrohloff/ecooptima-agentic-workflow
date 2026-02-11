@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>community</title>
+</head>
+
+<body>
+<font face="Arial">
+<h3 align="left"><a href="{{ url_for('home') }}">EcoOptima</a>
+<div style="width:100%; height:400px;">
+    <!-- This is the text section. The variable to input charts is openAi-chart. In theory the chart should be pasted on this side -->
+    <div id="openAi-text"
+         style="float:left; width:40%; height:100%; padding:10px; box-sizing:border-box; border-right:1px solid #ccc;"> 
+         <!-- Style is a HTML UI Attributes that control the look, font, and allignment of input side of the page designanted text space for GPT output -->
+        
+        <!-- Designanted text space for GPT text output -->
+        <div id="community-text-box"
+             style="height:280px; overflow-y:auto; box-sizing:border-box;">
+            
+            <h3>Backend text output goes here.</h3>
+            <div id="response"></div>
+
+        </div>
+        <center>
+        <!-- This is community text box, front end needs a backend community agent output key to specifically sen user web input to correctr AI agent -->
+        <div style="position:absolute; bottom:10px; width:95%;">
+
+            <!--    THIS IS THE NEW VERSION WHICH IS THE COMMUNITY INPUT BOX
+            <form onsubmit="sendToFlask(); return false;">
+                <input type="text" id="communityInput" name="communityInput" style="width:30%;">  
+                <button type="submit">Submit</button>
+            </form> 
+            -->
+
+            <form onsubmit="sendToFlask(); return false;"> <!-- THIS CAN BE REMOVED I WAS TESTING ORIGINAL FORM BOX WITH PAGE TO SEE IF SPACE WAS DYNAMIC FOR RESPONSE-->
+                <input type="text" id="userInput" name="userInput" style="width:50%;">
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        </center>
+    </div>
+
+    <!-- This is the chart section. The variable to output charts is openAi-chart. In theory the chart should be pasted on this side -->
+    <div id="openAi-chart"
+         style="float:left; width:60%; height:100%; padding:10px; box-sizing:border-box;">
+        
+        
+        <!-- Designanted image space for GPT chart output -->
+        <div id="community-chart-box"
+             style="height:280px; overflow-y:auto; box-sizing:border-box;">
+            
+            <h3>Chart Area</h3>
+            <div id="charts"></div> <!-- Theoretically where the chart should be rendered, I copied this from index.html -->
+
+        </div>
+    </div>
+</div>
+
+</font>
+
+<!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
+    <script 
+        src="{{ url_for('static', filename='js/common.js') }}"> 
+    </script>
+
+</body>
+</html>
