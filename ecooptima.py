@@ -12,10 +12,12 @@ from agents.extensions.visualization import draw_graph
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from pydantic import BaseModel
 import asyncio
+from pathlib import Path
+import os
 
 
 # Import plotting tools
-from ecooptima_tools import plot_bar_chart  # , plot_pie_chart, _generate_timestamp
+from ecooptima_tools import plot_bar_chart, _generate_timestamp  # , plot_pie_chart
 
 
 ###############
@@ -72,7 +74,7 @@ local_roi_agent = Agent(
 
                     Add these values to the provided list and return it to the user along with any charts or tables necessary to illustrate 
                     your points. Use the plot_bar_chart tool as necessary to visualize comparisons of local ROI.""",
-    output_type=LocalROIResult,
+    output_type=str,
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
         plot_bar_chart,
@@ -237,10 +239,10 @@ draw_graph(triage_agent, filename="agent_graph")
 
 
 # Response logging structure
-# class RunLog:
-#    timestamp: str
-#    input: str
-#    response: str
+class RunLog:
+    timestamp: str
+    input: str
+    response: str
 
 
 #####################
@@ -258,24 +260,26 @@ async def main(user_text):
             if user_input.strip().lower() == "exit":
                 break
 
-            # RunLog.timestamp = _generate_timestamp()
-            # log_dir = Path("response_log") / RunLog.timestamp
-            # log_dir.mkdir(parents=True, exist_ok=True)
-            # os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
+            RunLog.timestamp = _generate_timestamp()
+            log_dir = Path("response_log") / RunLog.timestamp
+            log_dir.mkdir(parents=True, exist_ok=True)
+            os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
             result = await Runner.run(triage_agent, user_input)
             print(result)
+
+            # Log the run
+            RunLog.input = user_input
+            RunLog.response = result.final_output
+            (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
+            (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
             return result.final_output
 
         except InputGuardrailTripwireTriggered as e:
             print("Guardrail blocked this input: ", e)
             return str(e)
 
-        # Log the run
-        #        RunLog.input = user_input
-        #        RunLog.response = result.final_output
-        #        (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
-        #        (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
+
 
 
 if __name__ == "__main__":

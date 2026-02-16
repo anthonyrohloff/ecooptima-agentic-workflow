@@ -26,8 +26,8 @@ def workFlowRoute():
         if folder.exists():
             for p in sorted(folder.iterdir()):
                 if p.suffix.lower() == ".png":
-                    img_urls.append(
-                        url_for("response_log_file", filename=p.name))
+                    relative_path = p.relative_to("response_log")
+                    img_urls.append(url_for("response_log_file", filename=relative_path.as_posix()))
 
     return jsonify({"result": result, "img_urls": img_urls})
 
