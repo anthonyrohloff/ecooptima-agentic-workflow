@@ -14,9 +14,11 @@
         <p>WORKFLOW INTEGRATION TEST</p>
         <p>Ask me an enviormental question e.g. What is the cost of carbon</p>
 
-        <form onsubmit="sendToFlask(); return false;">
+        <form onsubmit="sendToFlask('analyze'); return false;">
         <input type="text" id="userInput" name="userInput">
-        <button type="submit">Submit</button>
+        <button type="submit">Run Analysis</button>
+        <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
+        <button type="button" onclick="resetConversation()">Reset Conversation</button>
         </form>
 
     </center>

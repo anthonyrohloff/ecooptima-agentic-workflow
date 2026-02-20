@@ -14,6 +14,7 @@ from pydantic import BaseModel
 import asyncio
 from pathlib import Path
 import os
+import json
 
 
 # Import plotting tools
@@ -71,8 +72,8 @@ local_roi_agent = Agent(
     name="Local ROI Advisor",
     model=agent_model,
     instructions="""Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
-                    island mitigation benefits based on adding canopy cover to an urban environment. Finally, You quantify the environmental 
-                    benefits (carbon sequestration and stormwater inception) Extrapolate this estimate to cost savings on 
+                    island mitigation benefits based on adding canopy cover to an urban environment. Finally, You estimate the environmental 
+                    benefits (carbon sequestration and stormwater inception). Extrapolate this estimate to cost savings on 
                     cooling costs for nearby buildings. 
 
                     Add these values to the provided list and return it to the user. """,
@@ -82,6 +83,25 @@ local_roi_agent = Agent(
         # plot_bar_chart,
         # plot_pie_chart,
     ],
+)
+
+#################################
+### CONVERSATIONAL USER AGENT ###
+#################################
+
+
+conversational_agent = Agent(
+    name="Conversational Agent",
+    model=agent_model,
+    instructions="""You are the user-facing assistant for EcoOptima follow-up questions.
+                    You will receive a JSON payload with:
+                    - latest_workflow_output: the most recent output from the local ROI workflow
+                    - chat_history: recent back-and-forth turns
+                    - user_followup: the current follow-up question
+
+                    Use the latest_workflow_output as your primary factual context, then use chat_history for continuity.
+                    Answer only the user's follow-up. If context is missing, say what is missing briefly.""",
+    output_type=str,
 )
 
 
@@ -168,9 +188,9 @@ class PlantMatrixResult(BaseModel):
     rankings: list[RankedSpecies]
 
 
-planting_benefits_handoff = handoff(
-    agent=plant_benefits_agent, on_handoff=on_handoff, input_type=PlantMatrixResult
-)
+# planting_benefits_handoff = handoff(
+#     agent=plant_benefits_agent, on_handoff=on_handoff, input_type=PlantMatrixResult
+# )
 
 plant_matrix_agent = Agent(
     name="Plant Matrix Advisor",
@@ -254,42 +274,64 @@ class RunLog:
 #####################
 
 
-# Main function to run the agent
-async def main(user_text):
-    while True:
-        try:
-            user_input = user_text
+async def run_pipeline(user_input: str) -> str:
+    RunLog.timestamp = _generate_timestamp()
+    log_dir = Path("response_log") / RunLog.timestamp
+    log_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
-            # Exit condition
-            if user_input.strip().lower() == "exit":
-                break
+    result = await Runner.run(plant_matrix_agent, user_input)
+    result = await Runner.run(local_roi_agent, result.final_output.model_dump_json())
 
-            RunLog.timestamp = _generate_timestamp()
-            log_dir = Path("response_log") / RunLog.timestamp
-            log_dir.mkdir(parents=True, exist_ok=True)
-            os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
-
-            #result = await Runner.run(triage_agent, user_input)
-            #print(result)
-
-            # result = await Runner.run(triage_agent, user_input)
-            result = await Runner.run(plant_matrix_agent, user_input)
-            # result = await Runner.run(plant_benefits_agent, result.final_output.model_dump_json())
-            result = await Runner.run(local_roi_agent, result.final_output.model_dump_json())
+    RunLog.input = user_input
+    RunLog.response = result.final_output
+    (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
+    (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
+    return result.final_output
 
 
-            # Log the run
-            RunLog.input = user_input
-            RunLog.response = result.final_output
-            (log_dir / "input.txt").write_text(RunLog.input, encoding="utf-8")
-            (log_dir / "output.txt").write_text(RunLog.response, encoding="utf-8")
-            return result.final_output
-
-        except InputGuardrailTripwireTriggered as e:
-            print("Guardrail blocked this input: ", e)
-            return str(e)
+def _trim_history(chat_history: list[dict], keep_last: int = 8) -> list[dict]:
+    return chat_history[-keep_last:]
 
 
+async def run_followup(user_input: str, session_state: dict) -> str:
+    payload = {
+        "latest_workflow_output": session_state.get("last_pipeline_output", ""),
+        "chat_history": _trim_history(session_state.get("chat_history", [])),
+        "user_followup": user_input,
+    }
+    result = await Runner.run(conversational_agent, json.dumps(payload))
+    return result.final_output
+
+
+# Main function to run either full workflow or conversational follow-up
+async def main(user_text, mode: str = "analyze", session_state: dict | None = None):
+    try:
+        user_input = user_text
+
+        if user_input.strip().lower() == "exit":
+            return "exit"
+
+        session_state = session_state if session_state is not None else {}
+        session_state.setdefault("chat_history", [])
+
+        if mode == "followup":
+            if not session_state.get("last_pipeline_output"):
+                return "No prior workflow context found. Run an analysis first, then ask a follow-up."
+            response = await run_followup(user_input, session_state)
+        else:
+            response = await run_pipeline(user_input)
+            session_state["last_pipeline_output"] = response
+
+        session_state["chat_history"].append({"role": "user", "content": user_input})
+        session_state["chat_history"].append({"role": "assistant", "content": response})
+        session_state["chat_history"] = _trim_history(session_state["chat_history"], keep_last=12)
+
+        return response
+
+    except InputGuardrailTripwireTriggered as e:
+        print("Guardrail blocked this input: ", e)
+        return str(e)
 
 
 if __name__ == "__main__":
