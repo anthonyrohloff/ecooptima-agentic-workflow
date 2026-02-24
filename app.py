@@ -26,9 +26,25 @@ def _get_session_state() -> dict:
 def home():
     return render_template("index.html")
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/community")
 def community():
     return render_template("community.html")
+
+@app.route("/academic")
+def academic():
+    return render_template("academic.html")
+
+@app.route("/consumer")
+def consumer():
+    return render_template("consumer.html")
+
+@app.route("/government")
+def government():
+    return render_template("government.html")
 
 @app.route("/response", methods=["POST"])
 def workFlowRoute():
