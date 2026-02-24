@@ -61,9 +61,9 @@ class RankedSpecies(BaseModel):
 #     cooling_cost_savings: str
 #     carbon_sequestration: str
 #     stormwater_inception: str
-# 
-# 
-# 
+#
+#
+#
 # class LocalROIResult(BaseModel):
 #     rankings: list[RankedSpeciesForROI]
 
@@ -72,15 +72,21 @@ local_roi_agent = Agent(
     name="Local ROI Advisor",
     model=agent_model,
     instructions="""Quantify the air quality and well-being impacts of planting the given list of plants. Also, estimate the urban heat 
-                    island mitigation benefits based on adding canopy cover to an urban environment. Finally, You estimate the environmental 
+                    island mitigation benefits based on adding canopy cover to an urban environment. Estimate the environmental 
                     benefits (carbon sequestration and stormwater inception). Extrapolate this estimate to cost savings on 
-                    cooling costs for nearby buildings. 
+                    cooling costs for nearby buildings. Use the data you have to plot a marginal abatement cost curve with the plot_bar_chart tool
+                    to identify the most cost-effective plants for sequestration of carbon.
 
-                    Add these values to the provided list and return it to the user. """,
+                    REQUIREMENTS:
+                    1. Return a plaintext, summarized response about your findings. Your response should include three sections:
+                       a brief paragraph explaining what the findings include, the ranked list in plaintext WITH their corresponding values 
+                       for each category, and practical takeaways. No other notes, totals, explanaitions, or follow-up questions are allowed.
+                    2. Create a MACC using the plot_bar_chart tool. IMPORTANT: do not explain the chart OR tell the user where it was saved to. 
+                       Assume it will be automatically displayed and understood.""",
     output_type=str,
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
-        # plot_bar_chart,
+        plot_bar_chart,
         # plot_pie_chart,
     ],
 )
@@ -113,26 +119,26 @@ conversational_agent = Agent(
 # class RankedSpeciesForBenefits(RankedSpecies):
 #     carbon_sequestration: str
 #     stormwater_inception: str
-# 
-# 
+#
+#
 # class PlantingBenefitsResult(BaseModel):
 #     rankings: list[RankedSpeciesForBenefits]
-# 
-# 
+#
+#
 # local_roi_handoff = handoff(
 #     agent=local_roi_agent, on_handoff=on_handoff, input_type=PlantingBenefitsResult
 # )
-# 
-# 
+#
+#
 # plant_benefits_agent = Agent(
 #     name="Planting Benefits Advisor",
 #     model=agent_model,
-#     instructions=f"""{RECOMMENDED_PROMPT_PREFIX} 
+#     instructions=f"""{RECOMMENDED_PROMPT_PREFIX}
 #                     You quantify the environmental benefits (carbon sequestration and stormwater inception) for the list
-#                     of plants provided to you. Use the vector store file search tool to look up information about each plant 
+#                     of plants provided to you. Use the vector store file search tool to look up information about each plant
 #                     given to you.""",
-# 
-#                     # Feel free to include tables and charts to illustrate your points if necessary by using 
+#
+#                     # Feel free to include tables and charts to illustrate your points if necessary by using
 #                     # the plot_bar_chart tool you have access to.
 #                     # Do NOT answer the user. Your ONLY output must be a single call to local_roi_handoff. After the tool call, stop.
 #                     # Do NOT give a status update like 'request handed off to local roi agent.'""",
@@ -200,9 +206,8 @@ plant_matrix_agent = Agent(
                     based on the structured variables you receive. Enforce species diversity and resilience.
 
                     Create a ranked list of species, including size, survival probability, and maintenance costs.""",
-
-                    # Do NOT answer the user. Your ONLY output must be a single call to planting_benefits_handoff. After the tool call, stop.
-                    # Do NOT give a status update like 'request handed off to planting benefits advisor.'""",
+    # Do NOT answer the user. Your ONLY output must be a single call to planting_benefits_handoff. After the tool call, stop.
+    # Do NOT give a status update like 'request handed off to planting benefits advisor.'""",
     tools=[
         FileSearchTool(vector_store_ids=[plant_matrix_vector_store]),
         # plot_bar_chart,
@@ -226,14 +231,14 @@ plant_matrix_agent = Agent(
 #     scale: str | None = None
 #     time_horizon_years: str | None = None
 #     budget: str | None = None
-# 
-# 
+#
+#
 # # Handoff object to execute information relay
 # plant_matrix_handoff = handoff(
 #     agent=plant_matrix_agent, on_handoff=on_handoff, input_type=InputVariables
 # )
-# 
-# 
+#
+#
 # # Define triage agent
 # triage_agent = Agent(
 #     name="Triage Agent",
@@ -245,7 +250,7 @@ plant_matrix_agent = Agent(
 #                     scale = [size of project (for a park, a neighborhood, a city, a university, etc...)]
 #                     time_horizon_years = [how long the user wants project SETUP will take, not including continuous maintenance]
 #                     budget = [total budget for project] """,
-# 
+#
 #                     # Then, call the plant_matrix_handoff tool to pass the information to the next agent. Do not give a final response to the user.,
 #     input_guardrails=[InputGuardrail(guardrail_function=eco_optima_guardrail)],
 #     # handoffs=[plant_matrix_handoff],
@@ -325,7 +330,9 @@ async def main(user_text, mode: str = "analyze", session_state: dict | None = No
 
         session_state["chat_history"].append({"role": "user", "content": user_input})
         session_state["chat_history"].append({"role": "assistant", "content": response})
-        session_state["chat_history"] = _trim_history(session_state["chat_history"], keep_last=12)
+        session_state["chat_history"] = _trim_history(
+            session_state["chat_history"], keep_last=12
+        )
 
         return response
 
