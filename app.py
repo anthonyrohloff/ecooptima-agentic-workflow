@@ -1,10 +1,25 @@
 import ecooptima
-from flask import Flask, request, render_template, url_for, jsonify, send_from_directory
+from flask import Flask, request, render_template, url_for, jsonify, send_from_directory, session
 import asyncio
 import os
 from pathlib import Path
+from uuid import uuid4
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "ecooptima-dev-secret")
+
+
+conversation_store: dict[str, dict] = {}
+
+
+def _get_session_state() -> dict:
+    session_id = session.get("session_id")
+    if not session_id:
+        session_id = str(uuid4())
+        session["session_id"] = session_id
+    if session_id not in conversation_store:
+        conversation_store[session_id] = {"chat_history": [], "last_pipeline_output": ""}
+    return conversation_store[session_id]
 
 
 @app.route("/")
@@ -18,10 +33,15 @@ def community():
 @app.route("/response", methods=["POST"])
 def workFlowRoute():
     user_text = request.form.get("userInput", "")
-    result = asyncio.run(ecooptima.main(user_text))
+    mode = request.form.get("mode", "analyze").strip().lower()
+    if mode not in {"analyze", "followup"}:
+        mode = "analyze"
+
+    session_state = _get_session_state()
+    result = asyncio.run(ecooptima.main(user_text, mode=mode, session_state=session_state))
     img_urls = []
     folder_env = os.environ.get("ECOOPTIMA_LOG_DIR")
-    if folder_env:
+    if folder_env and mode == "analyze":
         folder = Path(folder_env)
         if folder.exists():
             for p in sorted(folder.iterdir()):
@@ -30,6 +50,14 @@ def workFlowRoute():
                     img_urls.append(url_for("response_log_file", filename=relative_path.as_posix()))
 
     return jsonify({"result": result, "img_urls": img_urls})
+
+
+@app.route("/reset", methods=["POST"])
+def reset_conversation():
+    session_id = session.get("session_id")
+    if session_id and session_id in conversation_store:
+        conversation_store[session_id] = {"chat_history": [], "last_pipeline_output": ""}
+    return jsonify({"status": "ok", "message": "Conversation context cleared."})
 
 
 @app.route("/response_log/<path:filename>")

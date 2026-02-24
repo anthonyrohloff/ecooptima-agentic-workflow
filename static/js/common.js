@@ -1,6 +1,7 @@
 // static/js/common.js
-  function sendToFlask() {
+  function sendToFlask(mode) {
       var input = document.getElementById("userInput").value;
+      var selectedMode = mode || "analyze";
   
       var xhr = new XMLHttpRequest();
       xhr.open("POST", "/response", true);
@@ -24,6 +25,24 @@
           }
       };
   
-      xhr.send("userInput=" + encodeURIComponent(input));
+      xhr.send(
+          "userInput=" +
+              encodeURIComponent(input) +
+              "&mode=" +
+              encodeURIComponent(selectedMode)
+      );
+  }
+
+  function resetConversation() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/reset", true);
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              var data = JSON.parse(xhr.responseText);
+              document.getElementById("response").innerText = data.message;
+              document.getElementById("charts").innerHTML = "";
+          }
+      };
+      xhr.send();
   }
   
