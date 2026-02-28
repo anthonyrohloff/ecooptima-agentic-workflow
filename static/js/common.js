@@ -1,7 +1,8 @@
 // static/js/common.js
-  function sendToFlask(mode) {
+  function sendToFlask(mode, workflow) {
       var input = document.getElementById("userInput").value;
       var selectedMode = mode || "analyze";
+      var selectedWorkflow = workflow;
   
       var xhr = new XMLHttpRequest();
       xhr.open("POST", "/response", true);
@@ -29,7 +30,9 @@
           "userInput=" +
               encodeURIComponent(input) +
               "&mode=" +
-              encodeURIComponent(selectedMode)
+              encodeURIComponent(selectedMode) +
+              "&workflow=" +
+              encodeURIComponent(selectedWorkflow)
       );
   }
 
