@@ -8,7 +8,7 @@ import json
 
 # Import functions
 from ecooptima_tools import _generate_timestamp
-from workflows import CommunityWorkflow
+from workflows import CommunityWorkflow, ConsumerWorkflow
 
 
 ############################
@@ -28,18 +28,25 @@ class RunLog:
 #####################
 
 
-async def run_community_pipeline(user_input: str) -> str:
-    workflow = CommunityWorkflow()
+def _build_workflow(workflow_name: str):
+    match workflow_name:
+        case "community":
+            return CommunityWorkflow()
+        case "consumer":
+            return ConsumerWorkflow()
+        case _:
+            raise ValueError(f"Unsupported workflow '{workflow_name}'")
+
+
+async def run_pipeline(user_input: str, workflow_name: str) -> str:
+    workflow = _build_workflow(workflow_name)
 
     RunLog.timestamp = _generate_timestamp()
     log_dir = Path("response_log") / RunLog.timestamp
     log_dir.mkdir(parents=True, exist_ok=True)
     os.environ["ECOOPTIMA_LOG_DIR"] = str(log_dir)
 
-    result = await Runner.run(workflow.plant_matrix_agent, user_input)
-    result = await Runner.run(
-        workflow.local_roi_agent, result.final_output.model_dump_json()
-    )
+    result = await workflow.run(user_input)
 
     RunLog.input = user_input
     RunLog.response = result.final_output
@@ -53,12 +60,13 @@ def _trim_history(chat_history: list[dict], keep_last: int = 8) -> list[dict]:
 
 
 async def run_followup(user_input: str, session_state: dict) -> str:
+    workflow = _build_workflow(session_state.get("workflow", "community"))
     payload = {
         "latest_workflow_output": session_state.get("last_pipeline_output", ""),
         "chat_history": _trim_history(session_state.get("chat_history", [])),
         "user_followup": user_input,
     }
-    result = await Runner.run(conversational_agent, json.dumps(payload))
+    result = await Runner.run(workflow.conversational_agent, json.dumps(payload))
     return result.final_output
 
 
@@ -77,21 +85,16 @@ async def main(
 
         session_state = session_state if session_state is not None else {}
         session_state.setdefault("chat_history", [])
+        session_state.setdefault("workflow", workflow)
 
         if mode == "followup":
             if not session_state.get("last_pipeline_output"):
                 return "No prior workflow context found. Run an analysis first, then ask a follow-up."
             response = await run_followup(user_input, session_state)
         else:
-            match workflow:
-                case "community":
-                    response = await run_community_pipeline(user_input)
-                case "consumer":
-                    print("CASE STATEMENT")
-                case _:
-                    response = "no response (default case hit)"
-
+            response = await run_pipeline(user_input, workflow)
             session_state["last_pipeline_output"] = response
+            session_state["workflow"] = workflow
 
         session_state["chat_history"].append({"role": "user", "content": user_input})
         session_state["chat_history"].append({"role": "assistant", "content": response})
