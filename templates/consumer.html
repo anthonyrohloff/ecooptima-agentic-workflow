@@ -1,12 +1,66 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>consumer</title>
-</head>
-<body>
-    <font face="Arial"></font>    
-    <h3 align="left"><a href="{{ url_for('home') }}">EcoOptima</a>
+    <head>
+        <title>Consumer</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
 
-    
-</body>
+    <body>
+        <!-- Page Layout -->
+        <div class="layout">
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+
+                <h2 class="logo">
+                    <a href="{{ url_for('home') }}">EcoOptima</a>
+                </h2>
+
+                <div class="dropdown">
+                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item">
+                        About
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('academic') }}">Academic</a>
+                        <a href="{{ url_for('business') }}">Business</a>
+                        <a href="{{ url_for('consumer') }}" class="nav-item active">Consumer</a>
+                        <a href="{{ url_for('community') }}">Community</a>
+                        <a href="{{ url_for('government') }}">Government</a>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('home') }}" class="nav-item">
+                    Dashboard
+                </a>
+
+            </div>
+
+            <!-- Main HTML -->
+            <div class="main">
+                <div class="card">
+
+                    <h1>Consumer</h1>
+
+                    <p>
+                        Focus on sustainability economics for consumers for broad climate change solutions.
+                        Create a MACC for climate change mitigation for consumers from green purchases to
+                        EVs and solar installations.
+                    </p>
+
+                    <img 
+                        src="{{ url_for('static', filename='images/ConsumerDashboard.png') }}" 
+                        alt="Consumer Use-Case Dashboard"
+                        style="width:50%; border-radius:12px; margin:20px 0;"
+                    >
+
+                    <img 
+                        src="{{ url_for('static', filename='images/ConsumerMACC.png') }}" 
+                        alt="Consumer Use-Case Dashboard" 
+                        style="width:50%; border-radius:12px; margin:20px 0;"
+                    >
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

@@ -2,10 +2,68 @@
 <html>
     <head>
         <title>About EcoOptima</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     </head>
+
     <body>
-        <h3 align="left"><a href="{{ url_for('home') }}">EcoOptima</a>
-        <h1>Abstract</h1>
-        <p>The Green Foundation is seeking proposals for a net-positive, integrated strategic model that delivers a prioritized continuum of high-impact, low-cost climate solutions. This proposal introduces EcoOptima (Algorithm-Driven System for Sustainable Value Optimization), a comprehensive framework designed to accelerate climate change mitigation.  The system integrates advanced analytics with both nature-based and engineering solutions to recommend scalable, evidence-based actions tailored to diverse stakeholders—communities, consumers, businesses, governments, and academic institutions. By aligning environmental and economic value, the framework enables practical strategies that maximize positive impact, reduce costs, and support long-term sustainability. The world is undergoing profound transformation. Climate disruption, the rise of generative artificial intelligence (AI), and growing social fragmentation are reshaping how we live, work, and learn. These forces of change are interconnected, driven by the convergence of technological innovation and the disruption of natural systems. To navigate this new era, we must accelerate high-payoff strategies that deliver both direct and indirect returns—creating resilience, equity, and sustainable value. </p>
-</body>
+        <!-- Page Layout -->
+        <div class="layout">
+            <!-- Side Bar -->
+            <div class="sidebar">
+
+                <h2 class="logo">
+                    <a href="{{ url_for('home') }}">EcoOptima</a>
+                </h2>
+
+                <div class="dropdown">
+                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item {% if request.endpoint in ['about','community','government','academic','consumer'] %}active{% endif %}">
+                        About
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('academic') }}">Academic</a>
+                        <a href="{{ url_for('business') }}">Business</a>
+                        <a href="{{ url_for('consumer') }}" >Consumer</a>
+                        <a href="{{ url_for('community') }}">Community</a>
+                        <a href="{{ url_for('government') }}">Government</a>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('home') }}" class="nav-item">
+                    Dashboard
+                </a>
+
+            </div>
+            <div class="main">
+                <div class="card">
+                    <h1>Abstract</h1>
+                    <p>
+                        The Green Foundation is seeking proposals for a net-positive, integrated strategic model that delivers a prioritized continuum of high-impact, low-cost climate solutions. 
+                        This proposal introduces EcoOptima (Algorithm-Driven System for Sustainable Value Optimization), a comprehensive framework designed to accelerate climate change mitigation.
+                        The system integrates advanced analytics with both nature-based and engineering solutions to recommend scalable, evidence-based actions tailored to diverse 
+                        stakeholders—communities, consumers, businesses, governments, and academic institutions. By aligning environmental and economic value, the framework enables practical 
+                        strategies that maximize positive impact, reduce costs, and support long-term sustainability. The world is undergoing profound transformation. Climate disruption, the rise 
+                        of generative artificial intelligence (AI), and growing social fragmentation are reshaping how we live, work, and learn. These forces of change are interconnected, driven 
+                        by the convergence of technological innovation and the disruption of natural systems. To navigate this new era, we must accelerate high-payoff strategies that deliver both 
+                        direct and indirect returns—creating resilience, equity, and sustainable value. 
+                    </p>
+                    <p>
+                        Global carbon markets are maturing, potentially cutting decarbonization costs and improving capital efficiency. By 2040, half of carbon credit demand is expected to 
+                        be regulated under systems such as Article 6 of the Paris Agreement. Experts from MSCI, Germany, and Singapore stressed that international cooperation and 
+                        standardized rules are essential for market integrity. However, inconsistent national commitments and governance gaps threaten credibility. MSCI's Article 6 
+                        Integrity Framework aims to promote accountability and prevent double-counting, encouraging more ambitious climate action worldwide. Similar projects exist in the 
+                        world, but nothing like EcoOptima. AI for Ecology, for example. is a project run by Dr. Sergio Marconi out of the University of Florida that emphasizes leveraging 
+                        machine learning to identify patterns in sensor data. EcoOptima is focused on giving recommendations to people, businesses, or organizations looking to do 
+                        something to help the environment. There are five well-defined use-cases to be focused on for this project: community, consumer, business, government, and academic. 
+                        So far, the team has focused on developing a minimum viable product, or MVP, for the community use case. The scope of this project is to develop AI workflows for 
+                        the five proposed use-cases, a frontend application for both mobile and desktop environments for users to interface with the AI workflows, and documentation on 
+                        both the technical and academic progress made. To define this project as a success, the five use cases should be fully implemented with an accompanying mobile 
+                        application, and it should produce strong, information-backed recommendations on the best courses of action for each prompt the user gives. 
+                        Also in consideration: our advisor, Prof. Ralph Brueggemann, is working towards a patent on this system. Certain criteria need to be met in order to make this a 
+                        possibility.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

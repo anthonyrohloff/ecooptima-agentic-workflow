@@ -30,13 +30,17 @@ def home():
 def about():
     return render_template("about.html")
 
-@app.route("/community")
-def community():
-    return render_template("community.html")
-
 @app.route("/academic")
 def academic():
     return render_template("academic.html")
+
+@app.route("/business")
+def business():
+    return render_template("business.html")
+
+@app.route("/community")
+def community():
+    return render_template("community.html")
 
 @app.route("/consumer")
 def consumer():
