@@ -10,14 +10,17 @@
         <div class="layout">
             <!-- Sidebar -->
             <div class="sidebar">
-
                 <h2 class="logo">
                     <a href="{{ url_for('home') }}">EcoOptima</a>
                 </h2>
 
+                <a href="{{ url_for('about') }}" class="nav-item">
+                    About
+                </a>
+
                 <div class="dropdown">
-                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item">
-                        About
+                    <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">
+                        Dashboard
                     </a>
 
                     <div class="dropdown-menu">
@@ -28,55 +31,35 @@
                         <a href="{{ url_for('government') }}">Government</a>
                     </div>
                 </div>
-
-                <a href="{{ url_for('home') }}" class="nav-item">
-                    Dashboard
-                </a>
-
             </div>
 
             <!-- Main HTML -->
             <div class="main">
                 <div class="card">
 
-                    <h1>Business</h1>
-                    <p>
-                        Focus on sustainability economics for businesses for broad climate change solutions:
-                        Create a MACC for climate change mitigation for businesses from energy efficient
-                        buildings to transportation, EVs, CCS, and DAC.
-                    </p>
+                    <h1>EcoEnviorment Business Assistant</h1>
 
-                    <img 
-                        src="{{ url_for('static', filename='images/BusinessDashboard.png') }}" 
-                        alt="Business Use-Case Dashboard"
-                        style="width:50%; border-radius:12px; margin:20px 0;"
-                    >
-                    
-                    <h3>Building Construction Sustainability</h3>
-                    <p>
-                        To incorporate plant bundles into LEED implementation, use the Sustainable Sites
-                        credit category, which supports landscape strategies such as native planting,
-                        stormwater management, and habitat restoration. LEED often aligns with the
-                        Sustainable SITES Initiative (SITES)—a complementary but separate rating system
-                        specifically focused on outdoor landscape design—offering additional guidance for
-                        integrating sustainable plant bundles.
-                    </p><br>
-                    
-                    <h3>Transportation</h3>
-                    <p>
-                        The building of urban trails offloads vehicles and provides linear green scape
-                        opportunities. Bundles can be planted along highways for the benefits as well as noise
-                        suppression. The 34-mile CROWN route is a local project for build a multiuse trail
-                        system.
-                    </p>
+                    <div id="assistant-output" style="display:none;">
+                        <div id="response-box">
+                            <div id="response"></div>
+                            <div id="charts"></div>
+                        </div>
+                    </div>
 
-                    <img 
-                        src="{{ url_for('static', filename='images/BusinessMACC.png') }}" 
-                        alt="Business Use-Case MACC" 
-                        style="width:50%; border-radius:12px; margin:20px 0;"
-                    >
+                    <form onsubmit="sendToFlask('analyze','business'); return false;">
+                        <input type="text" id="userInput" name="userInput" placeholder="Try asking: What plant bundles should I use for LEED implementation?">
+                        <button type="submit">Run Analysis</button>
+                        <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
+                        <button type="button" onclick="resetConversation()">Reset Conversation</button>
+                    </form>
+                    <div id="spinner" class="spinner" style="display:none;"></div>
                 </div>
             </div>
         </div>
+
+        <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
+        <script 
+            src="{{ url_for('static', filename='js/common.js') }}"> 
+        </script>
     </body>
 </html>
