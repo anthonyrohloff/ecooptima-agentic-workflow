@@ -10,16 +10,19 @@
         <div class="layout">
             <!-- Side Bar -->
             <div class="sidebar">
-
                 <h2 class="logo">
                     <a href="{{ url_for('home') }}">EcoOptima</a>
                 </h2>
 
-                <div class="dropdown">
-                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item {% if request.endpoint in ['about','community','government','academic','consumer'] %}active{% endif %}">
-                        About
-                    </a>
+                <a href="{{ url_for('about') }}" class="nav-item active">
+                    About
+                </a>
 
+                <div class="dropdown">
+                    
+                    <a href="{{ url_for('home') }}"  class="dropdown-toggle nav-item {% if request.endpoint in ['dashboard','community','government','academic','consumer'] %}active{% endif %}">
+                        Dashboard
+                    </a>
                     <div class="dropdown-menu">
                         <a href="{{ url_for('academic') }}">Academic</a>
                         <a href="{{ url_for('business') }}">Business</a>
@@ -28,11 +31,7 @@
                         <a href="{{ url_for('government') }}">Government</a>
                     </div>
                 </div>
-
-                <a href="{{ url_for('home') }}" class="nav-item">
-                    Dashboard
-                </a>
-
+                
             </div>
             <div class="main">
                 <div class="card">
@@ -62,6 +61,147 @@
                         Also in consideration: our advisor, Prof. Ralph Brueggemann, is working towards a patent on this system. Certain criteria need to be met in order to make this a 
                         possibility.
                     </p>
+
+                    <br>
+                    <div class ="academic-about">
+                        <h2>Academic</h2>
+                        <img 
+                            src="{{ url_for('static', filename='images/AcademicDashboard.png') }}" 
+                            alt="Academic Use-Case Dashboard"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+
+                        <img 
+                            src="{{ url_for('static', filename='images/AcademicMACC.png') }}" alt="Academic Use-Case Dashboard" 
+                            alt="Academic Use-Case MACC"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                    </div>
+
+                    <div class="business-about">
+                        <h2>Business</h2>
+                        <p>
+                            Focus on sustainability economics for businesses for broad climate change solutions:
+                            Create a MACC for climate change mitigation for businesses from energy efficient
+                            buildings to transportation, EVs, CCS, and DAC.
+                        </p>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/BusinessDashboard.png') }}" 
+                            alt="Business Use-Case Dashboard"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                        
+                        <h3>Building Construction Sustainability</h3>
+                        <p>
+                            To incorporate plant bundles into LEED implementation, use the Sustainable Sites
+                            credit category, which supports landscape strategies such as native planting,
+                            stormwater management, and habitat restoration. LEED often aligns with the
+                            Sustainable SITES Initiative (SITES)—a complementary but separate rating system
+                            specifically focused on outdoor landscape design—offering additional guidance for
+                            integrating sustainable plant bundles.
+                        </p><br>
+                        
+                        <h3>Transportation</h3>
+                        <p>
+                            The building of urban trails offloads vehicles and provides linear green scape
+                            opportunities. Bundles can be planted along highways for the benefits as well as noise
+                            suppression. The 34-mile CROWN route is a local project for build a multiuse trail
+                            system.
+                        </p>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/BusinessMACC.png') }}" 
+                            alt="Business Use-Case MACC" 
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                    </div>
+                    <div class="community-about">
+                        <h2>Community</h2>
+
+                        <p>
+                            The vision is to transition urban forestry to the new tiny forest model 
+                            (dense planting) and implement optimized bundles throughout the region. 
+                            Ultimately, the goal is to achieve net-zero. The theme was to shift to focus 
+                            on economic value using ROI is the theme in addition to technology and 
+                            nature-based ecosystems. There was discussion about the use of biochar as 
+                            one element of importance, but a holistic model is necessary to create an 
+                            optimized bundle of natural building blocks. Implement cost- effective 
+                            bundles in the community to promote biodiversity, purify air, and water, 
+                            and reduce urban heat stress.
+                        </p>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/CommunityDashboard.png') }}" 
+                            alt="Community Use-Case Dashboard"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+
+                        <p>
+                            The vision is to transition urban forestry to the new tiny forest model 
+                            (dense planting) and implement optimized bundles throughout the region. 
+                            Ultimately, the goal is to achieve net-zero. The theme was to shift to focus 
+                            on economic value using ROI is the theme in addition to technology and 
+                            nature-based ecosystems. There was discussion about the use of biochar as 
+                            one element of importance, but a holistic model is necessary to create an 
+                            optimized bundle of natural building blocks. Implement cost- effective 
+                            bundles in the community to promote biodiversity, purify air, and water, and 
+                            reduce urban heat stress.
+                        </p>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/CommunityMACC.png') }}"
+                            alt="Community Use-Case Dashboard" 
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                    </div>
+                    <div class="consumer-about">
+                        <h2>Consumer</h2>
+
+                        <p>
+                            Focus on sustainability economics for consumers for broad climate change solutions.
+                            Create a MACC for climate change mitigation for consumers from green purchases to
+                            EVs and solar installations.
+                        </p>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/ConsumerDashboard.png') }}" 
+                            alt="Consumer Use-Case Dashboard"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+
+                        <img 
+                            src="{{ url_for('static', filename='images/ConsumerMACC.png') }}" 
+                            alt="Consumer Use-Case Dashboard" 
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                    </div>
+                    <div class="government-about">
+                        <h2>Government</h2>
+
+                        <p>
+                            The future policy landscape will recognize there is no scenario where climate is off the
+                            agenda. The changes that are becoming apparent in global weather patterns as the
+                            climate shifts give rise to growing pressures on policy makers and society to respond.
+                        </p>
+                        <ul>
+                            <li>Establish tax incentives for consumers and business</li>
+                            <li>Establish a policy for a carbon tax</li>
+                            <li>Establish a carbon credit-based business model that supports the 2023 Green Cincinnati Plan.</li>
+                        </ul>
+
+                        <img 
+                            src="{{ url_for('static', filename='images/GovernmentDashboard.png') }}" 
+                            alt="Government Use-Case Dashboard"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+
+                        <img 
+                            src="{{ url_for('static', filename='images/GovernmentMACC.png') }}"  
+                            alt="Government Use-Case MACC"
+                            style="width:50%; border-radius:12px; margin:20px 0;"
+                        >
+                    </div>
                 </div>
             </div>
         </div>

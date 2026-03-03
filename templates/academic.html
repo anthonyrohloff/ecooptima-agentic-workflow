@@ -10,15 +10,18 @@
         <div class="layout">
             <!-- Side Bar -->
             <div class="sidebar">
-
                 <h2 class="logo">
                     <a href="{{ url_for('home') }}">EcoOptima</a>
                 </h2>
 
+                <a href="{{ url_for('about') }}" class="nav-item">
+                    About
+                </a>
+
                 <div class="dropdown">
-                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item">
-                        About
-                    </a>
+                    <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">
+                        Dashboard
+                    </a> 
 
                     <div class="dropdown-menu">
                         <a href="{{ url_for('academic') }}"class="nav-item active">Academic</a>
@@ -28,32 +31,35 @@
                         <a href="{{ url_for('government') }}">Government</a>
                     </div>
                 </div>
-
-                <a href="{{ url_for('home') }}" class="nav-item">
-                    Dashboard
-                </a>
-
             </div>
 
             <!-- Main HTML -->
             <div class="main">
                 <div class="card">
 
-                    <h1>Academic</h1>
+                    <h1>EcoEnviorment Academic Assistant</h1>
 
-                    <img 
-                        src="{{ url_for('static', filename='images/AcademicDashboard.png') }}" 
-                        alt="Academic Use-Case Dashboard"
-                        style="width:50%; border-radius:12px; margin:20px 0;"
-                    >
-
-                    <img 
-                        src="{{ url_for('static', filename='images/AcademicMACC.png') }}" alt="Academic Use-Case Dashboard" 
-                        alt="Academic Use-Case MACC"
-                        style="width:50%; border-radius:12px; margin:20px 0;"
-                    >
+                    <div id="assistant-output" style="display:none;">
+                        <div id="response-box">
+                            <div id="response"></div>
+                            <div id="charts"></div>
+                        </div>
+                    </div>
+                    
+                    <form onsubmit="sendToFlask('analyze', 'academic'); return false;">
+                        <input type="text" id="userInput" name="userInput" placeholder="Try asking: What standards should I follow to reduce carbon emission on my college campus?">
+                        <button type="submit">Run Analysis</button>
+                        <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
+                        <button type="button" onclick="resetConversation()">Reset Conversation</button>
+                    </form>
+                    <div id="spinner" class="spinner" style="display:none;"></div>
                 </div>
             </div>
         </div>
+        
+        <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
+        <script 
+            src="{{ url_for('static', filename='js/common.js') }}"> 
+        </script> 
     </body>
 </html>

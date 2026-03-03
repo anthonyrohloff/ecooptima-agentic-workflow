@@ -113,22 +113,16 @@ body {
     box-shadow: 0 10px 25px rgba(0, 60, 150, 0.15);
 }
 
-/* ===== Assistant Output ===== */
-.helper-text {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 10px;
-}
-
 /* Response box */
 #response-box {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 20px;
-    margin-bottom: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
+    margin-bottom: 20px; 
+    /* max-height: 70vh;
+    overflow-y: auto; */
     border: 1px solid #dbe3f5;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 #response {
