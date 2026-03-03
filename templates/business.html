@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Business</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+
+    <body>
+        <!-- Page Layout -->
+        <div class="layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+
+                <h2 class="logo">
+                    <a href="{{ url_for('home') }}">EcoOptima</a>
+                </h2>
+
+                <div class="dropdown">
+                    <a href="{{ url_for('about') }}" class="dropdown-toggle nav-item">
+                        About
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('academic') }}">Academic</a>
+                        <a href="{{ url_for('business') }}"class="nav-item active">Business</a>
+                        <a href="{{ url_for('consumer') }}">Consumer</a>
+                        <a href="{{ url_for('community') }}">Community</a>
+                        <a href="{{ url_for('government') }}">Government</a>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('home') }}" class="nav-item">
+                    Dashboard
+                </a>
+
+            </div>
+
+            <!-- Main HTML -->
+            <div class="main">
+                <div class="card">
+
+                    <h1>Business</h1>
+                    <p>
+                        Focus on sustainability economics for businesses for broad climate change solutions:
+                        Create a MACC for climate change mitigation for businesses from energy efficient
+                        buildings to transportation, EVs, CCS, and DAC.
+                    </p>
+
+                    <img 
+                        src="{{ url_for('static', filename='images/BusinessDashboard.png') }}" 
+                        alt="Business Use-Case Dashboard"
+                        style="width:50%; border-radius:12px; margin:20px 0;"
+                    >
+                    
+                    <h3>Building Construction Sustainability</h3>
+                    <p>
+                        To incorporate plant bundles into LEED implementation, use the Sustainable Sites
+                        credit category, which supports landscape strategies such as native planting,
+                        stormwater management, and habitat restoration. LEED often aligns with the
+                        Sustainable SITES Initiative (SITES)—a complementary but separate rating system
+                        specifically focused on outdoor landscape design—offering additional guidance for
+                        integrating sustainable plant bundles.
+                    </p><br>
+                    
+                    <h3>Transportation</h3>
+                    <p>
+                        The building of urban trails offloads vehicles and provides linear green scape
+                        opportunities. Bundles can be planted along highways for the benefits as well as noise
+                        suppression. The 34-mile CROWN route is a local project for build a multiuse trail
+                        system.
+                    </p>
+
+                    <img 
+                        src="{{ url_for('static', filename='images/BusinessMACC.png') }}" 
+                        alt="Business Use-Case MACC" 
+                        style="width:50%; border-radius:12px; margin:20px 0;"
+                    >
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
