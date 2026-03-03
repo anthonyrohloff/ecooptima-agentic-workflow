@@ -1,8 +1,9 @@
 // static/js/common.js
-function sendToFlask(mode) {
+function sendToFlask(mode, workflow) {
     var inputField = document.getElementById("userInput");
     var input = inputField.value;
     var selectedMode = mode || "analyze";
+    var selectedWorkflow = workflow;
 
     if (input.trim() === "") {
         inputField.focus();
@@ -49,7 +50,9 @@ function sendToFlask(mode) {
         "userInput=" +
             encodeURIComponent(input) +
             "&mode=" +
-            encodeURIComponent(selectedMode)
+            encodeURIComponent(selectedMode) +
+            "&workflow=" +
+            encodeURIComponent(selectedWorkflow)
     );
 }
 
