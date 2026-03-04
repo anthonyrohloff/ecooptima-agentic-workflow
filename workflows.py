@@ -255,3 +255,199 @@ class ConsumerWorkflow:
             result.final_output.model_dump_json(),
         )
         return result
+
+
+InstitutionType = Literal[
+    "R1_research_university",
+    "teaching_college",
+    "community_college",
+    "medical_center",
+    "mixed",
+]
+Region = Literal["US", "EU", "UK", "Global"]
+
+
+class AcademicWorkflow:
+    #################
+    # CONFIG / INIT #
+    #################
+
+    def __init__(
+        self,
+        agent_model: str = "gpt-5-nano",
+        academic_vector_store: str = "vs_69a4d21889888191b4c0f0653a1f29e3",
+    ):
+        self.agent_model = agent_model
+        self.academic_vector_store = academic_vector_store
+
+        # State for follow-ups
+        self.latest_workflow_output: "AcademicWorkflow.MaccResult"
+
+        # Initialize agents (2 “thinking” agents + conversational)
+        self.academic_macc_agent = self._build_academic_macc_agent()
+        self.academic_roi_agent = self._build_academic_roi_agent()
+        self.conversational_agent = self._build_conversational_agent()
+
+    ########################
+    # SHARED DATA MODELS   #
+    ########################
+
+    class AcademicOption(BaseModel):
+        option_id: str
+        category: Literal[
+            "campus_operations", "research_programs", "workforce_training"
+        ]
+        description: str
+
+        # Economics
+        cost_usd: float
+        lifetime_years: int = Field(..., ge=1, le=50)
+
+        # Impact channels (tCO2e over lifetime)
+        operational_abatement_tCO2e: float = Field(..., ge=0)
+        research_spillover_tCO2e: float = Field(..., ge=0)
+        workforce_spillover_tCO2e: float = Field(..., ge=0)
+
+        # Derived fields (must be populated by the MACC agent)
+        total_effective_abatement_tCO2e: float = Field(..., ge=0)
+        cost_per_tCO2e_usd: float
+
+        notes: str = ""
+
+    class MaccAssumptions(BaseModel):
+        institution_type: InstitutionType = "mixed"
+        region: Region = "US"
+        discount_rate_real: float = 0.04
+        time_horizon_years: int = 20
+
+        # Method notes (important for spillovers)
+        research_attribution_method: str = "Expected-value: adoption_probability × plausible_global_abatement, discounted/allocated to institution"
+        workforce_attribution_method: str = "Expected-value: graduates × career_years × impact_per_worker, attribution-adjusted"
+
+        key_notes: List[str] = []
+
+    class MaccResult(BaseModel):
+        assumptions: "AcademicWorkflow.MaccAssumptions"
+        options: List["AcademicWorkflow.AcademicOption"]
+
+        # MACC ordering fields
+        sorted_option_ids: List[str]
+        cumulative_abatement_tCO2e: List[float]
+
+        narrative: str
+
+    #################
+    # HOOKS / UTILS #
+    #################
+
+    async def on_handoff(self, ctx, input_data: Any):
+        print(input_data)
+
+    ####################
+    # AGENT BUILDERS   #
+    ####################
+
+    def _build_academic_macc_agent(self):
+        return Agent(
+            name="Academic MACC Advisor",
+            model=self.agent_model,
+            instructions="""
+                            You build an academic-institution-focused marginal abatement cost curve (MACC) for climate mitigation.
+
+                            DATA SOURCE:
+                            - Use the academic vector store for option templates, typical costs, and any local priors.
+                            - If the user provides institution details, tailor assumptions accordingly.
+
+                            REQUIREMENTS:
+                            1) Produce 8–15 options spanning ALL THREE categories:
+                               - campus_operations (direct operational emissions)
+                               - research_programs (knowledge spillovers)
+                               - workforce_training (human capital / jobs spillovers)
+                            2) For each option, fill:
+                               - cost_usd, lifetime_years
+                               - operational_abatement_tCO2e, research_spillover_tCO2e, workforce_spillover_tCO2e
+                               - total_effective_abatement_tCO2e = sum of the three channels
+                               - cost_per_tCO2e_usd = cost_usd / total_effective_abatement_tCO2e
+                            3) Enforce internal consistency and avoid double counting:
+                               - Do NOT count the same abatement in multiple channels for the same intervention.
+                               - Research spillovers must be attribution-adjusted (expected value, conservative).
+                               - Workforce spillovers must be attribution-adjusted and conservative.
+                            4) Sort options by cost_per_tCO2e_usd ascending and compute cumulative_abatement_tCO2e in that sorted order.
+                            5) Return a short narrative explaining which levers dominate and why.
+
+                            OUTPUT:
+                            - Must conform exactly to the MaccResult schema.
+                            """,
+            output_type=self.MaccResult,
+            tools=[
+                FileSearchTool(vector_store_ids=[self.academic_vector_store]),
+            ],
+        )
+
+    def _build_academic_roi_agent(self) -> "Agent":
+        return Agent(
+            name="Academic ROI Advisor",
+            model=self.agent_model,
+            instructions="""
+                            You analyze the provided academic MACC options.
+
+                            TASKS:
+                            - Identify the top 3 lowest-cost-per-tCO2e options (including negative/near-zero if present).
+                            - Identify the top 3 highest total_effective_abatement_tCO2e options.
+                            - Compare which category dominates (campus operations vs research vs workforce).
+                            - Call out risks: attribution uncertainty, time-to-impact, organizational constraints.
+
+                            PLOTTING:
+                            - Plot a bar chart for cost_per_tCO2e_usd (sorted order) using plot_bar_chart.
+
+                            REQUIREMENTS:
+                            1) Return a plaintext response with three sections ONLY: findings, ranked lists (be sure to give easy-to-understand names to each item on the list), and takeaways.
+                            2) Create the bar chart using plot_bar_chart with no explanation/chart note after plotting (assume the user knows where it is saved).
+                            """,
+            output_type=str,
+            tools=[plot_bar_chart],
+        )
+
+    def _build_conversational_agent(self):
+        return Agent(
+            name="Academic MACC Conversational Agent",
+            model=self.agent_model,
+            instructions="""
+                            You are the user-facing assistant for academic MACC follow-up questions.
+                            Use latest_workflow_output as factual context for numbers.
+                            If asked to modify assumptions (discount rate, institution type, attribution method), explain how it would change results and recommend re-running the workflow.
+                            """,
+            output_type=str,
+        )
+
+    #################
+    # WORKFLOW RUN  #
+    #################
+
+    async def run(self, user_input: str):
+        # 1) Build the MACC dataset
+        macc_result = await Runner.run(self.academic_macc_agent, user_input)
+        final_macc = macc_result.final_output_as(self.MaccResult)
+        self.latest_workflow_output = final_macc
+
+        # 2) ROI analysis + plot (pass the structured result)
+        roi_result = await Runner.run(
+            self.academic_roi_agent,
+            final_macc.model_dump_json(),
+        )
+
+        return roi_result
+
+    async def chat(self, user_input: str) -> str:
+        # Optional: conversational follow-ups without rebuilding the MACC
+        ctx = (
+            self.latest_workflow_output.model_dump_json(indent=2)
+            if self.latest_workflow_output
+            else "No academic MACC has been generated yet."
+        )
+
+        result = await Runner.run(
+            self.conversational_agent,
+            f"latest_workflow_output:\n{ctx}\n\nuser:\n{user_input}",
+        )
+        return result.final_output
