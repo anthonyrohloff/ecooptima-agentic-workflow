@@ -1,6 +1,5 @@
 from agents import Runner
 from agents.exceptions import InputGuardrailTripwireTriggered
-import asyncio
 from pathlib import Path
 import os
 import json
@@ -8,7 +7,7 @@ import json
 
 # Import functions
 from ecooptima_tools import _generate_timestamp
-from workflows import CommunityWorkflow, ConsumerWorkflow
+from workflows import AcademicWorkflow, CommunityWorkflow, ConsumerWorkflow
 
 
 ############################
@@ -34,6 +33,8 @@ def _build_workflow(workflow_name: str):
             return CommunityWorkflow()
         case "consumer":
             return ConsumerWorkflow()
+        case "academic":
+            return AcademicWorkflow()
         case _:
             raise ValueError(f"Unsupported workflow '{workflow_name}'")
 
@@ -107,9 +108,3 @@ async def main(
     except InputGuardrailTripwireTriggered as e:
         print("Guardrail blocked this input: ", e)
         return str(e)
-
-
-if __name__ == "__main__":
-    input = input("Query: ")
-    result = asyncio.run(main(input))
-    print(result)

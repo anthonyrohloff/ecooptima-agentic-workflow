@@ -42,25 +42,31 @@ def home():
 def about():
     return render_template("about.html")
 
+
 @app.route("/academic")
 def academic():
     return render_template("academic.html")
+
 
 @app.route("/business")
 def business():
     return render_template("business.html")
 
+
 @app.route("/community")
 def community():
     return render_template("community.html")
+
 
 @app.route("/consumer")
 def consumer():
     return render_template("consumer.html")
 
+
 @app.route("/government")
 def government():
     return render_template("government.html")
+
 
 @app.route("/response", methods=["POST"])
 def workFlowRoute():
@@ -71,7 +77,7 @@ def workFlowRoute():
     if mode not in {"analyze", "followup"}:
         mode = "analyze"
 
-    if workflow not in {"community", "consumer"}:
+    if workflow not in {"community", "consumer", "academic"}:
         workflow = "community"
 
     session_state = _get_session_state()
