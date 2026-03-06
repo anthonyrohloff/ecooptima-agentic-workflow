@@ -1,65 +1,127 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Business</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    </head>
 
-    <body>
-        <!-- Page Layout -->
-        <div class="layout">
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <h2 class="logo">
-                    <a href="{{ url_for('home') }}">EcoOptima</a>
-                </h2>
+<head>
+    <title>Business</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-                <a href="{{ url_for('about') }}" class="nav-item">
-                    About
+<body>
+    <!-- Page Layout -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2 class="logo">
+                <a href="{{ url_for('home') }}">EcoOptima</a>
+            </h2>
+
+            <a href="{{ url_for('about') }}" class="nav-item">
+                About
+            </a>
+
+            <div class="dropdown">
+                <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">
+                    Dashboard
                 </a>
 
-                <div class="dropdown">
-                    <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">
-                        Dashboard
-                    </a>
-
-                    <div class="dropdown-menu">
-                        <a href="{{ url_for('academic') }}">Academic</a>
-                        <a href="{{ url_for('business') }}"class="nav-item active">Business</a>
-                        <a href="{{ url_for('consumer') }}">Consumer</a>
-                        <a href="{{ url_for('community') }}">Community</a>
-                        <a href="{{ url_for('government') }}">Government</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main HTML -->
-            <div class="main">
-                <div class="card">
-
-                    <h1>EcoEnviorment Business Assistant</h1>
-
-                    <div id="assistant-output" style="display:none;">
-                        <div id="response-box">
-                            <div id="response"></div>
-                            <div id="charts"></div>
-                        </div>
-                    </div>
-
-                    <form onsubmit="sendToFlask('analyze','business'); return false;">
-                        <input type="text" id="userInput" name="userInput" placeholder="Try asking: What plant bundles should I use for LEED implementation?">
-                        <button type="submit">Run Analysis</button>
-                        <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
-                        <button type="button" onclick="resetConversation()">Reset Conversation</button>
-                    </form>
-                    <div id="spinner" class="spinner" style="display:none;"></div>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('academic') }}">Academic</a>
+                    <a href="{{ url_for('business') }}" class="nav-item active">Business</a>
+                    <a href="{{ url_for('consumer') }}">Consumer</a>
+                    <a href="{{ url_for('community') }}">Community</a>
+                    <a href="{{ url_for('government') }}">Government</a>
                 </div>
             </div>
         </div>
 
-        <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
-        <script 
-            src="{{ url_for('static', filename='js/common.js') }}"> 
-        </script>
-    </body>
+        <!-- Main HTML -->
+        <div class="main">
+            <div class="card">
+
+                <h1>EcoOptima Sustainability Optimization Platform</h1>
+
+                <div id="assistant-output" style="display:none;">
+                    <div id="response-box">
+                        <div id="charts"></div>
+                        <div id="response"></div>
+                    </div>
+                </div>
+
+                <form onsubmit="sendToFlask('analyze','business'); return false;">
+                    <input type="text" id="userInput" name="userInput"
+                        placeholder="Try asking: What plant bundles should I use for LEED implementation?">
+                    <button type="submit">Run Analysis</button>
+                    <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
+                    <button type="button" onclick="resetConversation()">Reset Conversation</button>
+                </form>
+                <div id="spinner" class="spinner" style="display:none;"></div>
+                <p>Potential Questions:</p>
+                <ul>
+                    <li>How much CO2 could our LED lighting upgrades save per year?</li>
+                    <li>How many initiatives focus on renewable electricity adoption?</li>
+                </ul>
+                <div id="spinner" class="spinner" style="display:none;"></div>
+            </div>
+            <div class="performance-highlights">
+
+                <h2>Platform Performance Highlights</h2>
+
+                <div class="highlight-grid">
+
+                    <div class="stat-card">
+                        <h3>🌱 CO₂ Reduced</h3>
+                        <p>12,450 kg</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>💧 Water Saved</h3>
+                        <p>11,638 L</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>⚡ Energy Optimized</h3>
+                        <p>7,343 kWh</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>📊 Projects Analyzed</h3>
+                        <p>113</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="environment-dashboard card">
+                <h2>Environmental Analytics Dashboard</h2>
+                <p>Visualize how your mini forest or plant selections impact carbon, biodiversity, and soil
+                    health.</p>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <canvas id="corpAbatementChart"></canvas>
+                        <h4>Abatement Potential vs Cost Savings</h4>
+                    </div>
+
+                    <div class="chart-card">
+                        <canvas id="corpTimelineChart"></canvas>
+                        <h4>Projected CO₂ Reduction Over Time</h4>
+                    </div>
+
+                    <div class="chart-card">
+                        <canvas id="corpPolicyChart"></canvas>
+                        <h4>Initiative Distribution</h4>
+                    </div>
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+</body>
+
 </html>
