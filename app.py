@@ -120,4 +120,5 @@ def response_log_file(filename: str):
 port = int(os.environ.get("PORT", 10000))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port) # DEPLOYMENT FOR ONLINE HOST --- DO NOT COMMENT OUT DURING COMMITS
+    # app.run(debug=True)                  # DEPLOYMENT FOR LOCAL HOST --- THIS MUST BE LEFT COMMNETED OUT DURING COMMITS
