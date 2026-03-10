@@ -117,5 +117,7 @@ def response_log_file(filename: str):
     return send_from_directory("response_log", filename)
 
 
+port = int(os.environ.get("PORT", 10000))
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=port)
