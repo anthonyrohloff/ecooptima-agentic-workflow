@@ -34,6 +34,7 @@
                 </div>
             </div>
         </div>
+    
 
         <!-- Main HTML -->
         <div class="main">
@@ -51,7 +52,7 @@
                 <form onsubmit="sendToFlask('analyze','business'); return false;">
                     <input type="text" id="userInput" name="userInput"
                         placeholder="Try asking: What plant bundles should I use for LEED implementation?">
-                    <button type="submit">Run Analysis</button>
+                    <button type="submit" id ="analyzeBtn">Run Analysis</button>
                     <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
                     <button type="button" onclick="resetConversation()">Reset Conversation</button>
                 </form>
@@ -70,23 +71,27 @@
                 <div class="highlight-grid">
 
                     <div class="stat-card">
-                        <h3>🌱 CO₂ Reduced</h3>
-                        <p>12,450 kg</p>
+                        <div class="stat-title">🌱 CO₂ Avoided</div>
+                        <div class="stat-value">~4B tons</div>
+                        <div class="stat-context">U.S. ENERGY STAR · since 1992</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>💧 Water Saved</h3>
-                        <p>11,638 L</p>
+                        <div class="stat-title">💧 Water Reduction</div>
+                        <div class="stat-value">~10-30%</div>
+                        <div class="stat-context">U.S. industry · 2025</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>⚡ Energy Optimized</h3>
-                        <p>7,343 kWh</p>
+                        <div class="stat-title">⚡ Energy Saved</div>
+                        <div class="stat-value">~5T kWh</div>
+                        <div class="stat-context">U.S. ENERGY STAR · since 1992</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>📊 Projects Analyzed</h3>
-                        <p>113</p>
+                        <div class="stat-title">📊 Renewable Share</div>
+                        <div class="stat-value">~30%</div>
+                        <div class="stat-context">U.S. businesses · 2025</div>
                     </div>
                 </div>
             </div>
@@ -119,6 +124,11 @@
     </div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imgModal">
+        <span id="closeModal">&times;</span>
+        <img id="modalImg" alt="Enlarged chart">
+    </div>
     <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>

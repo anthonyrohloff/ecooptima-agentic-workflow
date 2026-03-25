@@ -130,7 +130,12 @@ body {
     border: none;
     padding: 0;
     margin: 0;
-    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    /* overflow: visible; */
     font-size: 14px;
     line-height: 1.6;
 }
@@ -144,6 +149,68 @@ body {
     height: auto;
     display: block;
     margin: 15px 0;
+}
+
+/* Chat bubbles */
+.message {
+    padding: 10px 14px;
+    border-radius: 16px;
+    max-width: 70%;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+/* User (right side) */
+.user {
+    align-self: flex-end;
+    background-color: #2563eb; /* matches your modern blue */
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Assistant (left side) */
+.assistant {
+    align-self: flex-start;
+    background-color: #f1f5f9;
+    color: #111827;
+    border-bottom-left-radius: 4px;
+}
+
+#imgModal {
+    display: none; /* hidden by default */
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.8);
+}
+
+#imgModal img {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+#closeModal {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#closeModal:hover {
+    color: #ff4444;
 }
 
 /* Performance Highlights */
@@ -257,4 +324,40 @@ h1,h2 {
 .chart-card canvas {
     width: 100% !important;   
     height: 200px !important; 
+}
+
+/* stat card */
+.stat-card {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 16px;
+    width: 3in;
+    height: 2in;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* title */
+.stat-title {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+/* BIG NUMBER */
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #166534;
+    margin-bottom: 6px;
+}
+
+/* context */
+.stat-context {
+    font-size: 0.75rem;
+    color: #94a3b8;
 }
