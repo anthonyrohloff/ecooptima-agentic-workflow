@@ -53,7 +53,7 @@
                 <form onsubmit="sendToFlask('analyze','government'); return false;">
                     <input type="text" id="userInput" name="userInput"
                         placeholder="Try asking: What are the tax incentives for carbon sequestration?">
-                    <button type="submit">Run Analysis</button>
+                    <button type="submit" id ="analyzeBtn">Run Analysis</button>
                     <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
                     <button type="button" onclick="resetConversation()">Reset Conversation</button>
                 </form>
@@ -71,26 +71,31 @@
 
                 <div class="highlight-grid">
 
-                    <div class="stat-card">
-                        <h3>🌱 CO₂ Reduced</h3>
-                        <p>14,987 kg</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <h3>💧 Water Saved</h3>
-                        <p>15,781 L</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <h3>⚡ Energy Optimized</h3>
-                        <p>9,549 kWh</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <h3>📊 Projects Analyzed</h3>
-                        <p>212</p>
-                    </div>
+                   <div class="stat-card">
+                    <div class="stat-title">🌱 CO₂ Avoided</div>
+                    <div class="stat-value">~4B tons</div>
+                    <div class="stat-context">U.S. gov programs · since 1992</div>
                 </div>
+
+                <div class="stat-card">
+                    <div class="stat-title">💧 Water Saved</div>
+                    <div class="stat-value">~7T gallons</div>
+                    <div class="stat-context">U.S. gov programs · since 2006</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-title">⚡ Energy Saved</div>
+                    <div class="stat-value">~5T kWh</div>
+                    <div class="stat-context">U.S. gov programs · since 1992</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-title">📊 Renewable Energy</div>
+                    <div class="stat-value">~1T kWh</div>
+                    <div class="stat-context">U.S. · 2025 (annual)</div>
+                </div>
+
+            </div>
             <div class="environment-dashboard card">
                 <h2>Environmental Analytics Dashboard</h2>
                 <p>Visualize how your mini forest or plant selections impact carbon, biodiversity, and soil health.
@@ -116,7 +121,11 @@
         </div>
     </div>
     
-
+    <!-- Image Modal -->
+    <div id="imgModal">
+        <span id="closeModal">&times;</span>
+        <img id="modalImg" alt="Enlarged chart">
+    </div>
     <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
