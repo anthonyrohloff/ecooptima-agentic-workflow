@@ -571,3 +571,215 @@ class BusinessWorkflow:
             final_macc.model_dump_json(),
         )
         return roi_result
+
+
+GovernmentScope = Literal["municipal", "state", "regional", "national", "mixed"]
+
+
+class GovernmentWorkflow:
+    #################
+    # CONFIG / INIT #
+    #################
+
+    def __init__(
+        self,
+        agent_model: str = "gpt-5-nano",
+        government_vector_store: str = "vs_69c6ef7318f081918694615a9aea164d",
+    ):
+        self.agent_model = agent_model
+        self.government_vector_store = government_vector_store
+
+        self.latest_workflow_output: Optional["GovernmentWorkflow.MaccResult"] = None
+
+        # Agents
+        self.government_macc_agent = self._build_government_macc_agent()
+        self.government_roi_agent = self._build_government_roi_agent()
+        self.conversational_agent = self._build_conversational_agent()
+
+    ########################
+    # SHARED DATA MODELS   #
+    ########################
+
+    class GovernmentOption(BaseModel):
+        option_id: str
+        category: str
+        description: str
+
+        program_cost_usd: float
+        lifetime_years: int = Field(..., ge=1, le=50)
+
+        community_abatement_tCO2e: float = Field(..., ge=0)
+        market_acceleration_tCO2e: float = Field(..., ge=0)
+        engagement_spillover_tCO2e: float = Field(..., ge=0)
+
+        total_effective_abatement_tCO2e: float = Field(..., ge=0)
+        cost_per_tCO2e_usd: float
+
+        implementation_complexity: str
+        applicability: str
+
+        notes: str = ""
+
+    class MaccAssumptions(BaseModel):
+        government_scope: GovernmentScope = "mixed"
+        region: str = "US"
+        discount_rate_real: float = 0.03
+
+        policy_basis: str = "tax incentives and carbon removal credits"
+        attribution_method: str = "Expected-value estimate of direct community abatement + market acceleration + engagement spillovers"
+
+        key_notes: List[str] = []
+
+    class MaccResult(BaseModel):
+        assumptions: "GovernmentWorkflow.MaccAssumptions"
+        options: List["GovernmentWorkflow.GovernmentOption"]
+
+        sorted_option_ids: List[str]
+        cumulative_abatement_tCO2e: List[float]
+
+        narrative: str
+
+    #################
+    # HOOKS / UTILS #
+    #################
+
+    async def on_handoff(self, ctx, input_data: Any):
+        print(input_data)
+
+    ####################
+    # AGENT BUILDERS   #
+    ####################
+
+    def _build_government_macc_agent(self):
+        return Agent(
+            name="Government Climate Policy MACC Advisor",
+            model=self.agent_model,
+            instructions="""
+                            You build a marginal abatement cost curve (MACC) for government incentive-based tax policy focused on climate mitigation and carbon removal credit systems.
+                            
+                            DATA:
+                            - Use the provided vector store as the primary dataset.
+                            - Treat each option as a policy lever, not merely a direct technology deployment.
+                            - Adjust options if the user specifies municipal, state, regional, or national scope.
+                            
+                            REQUIREMENTS:
+                            1) Select 8–15 relevant policy options across categories such as:
+                               - carbon_removal_policy
+                               - building_electrification_policy
+                               - building_efficiency_policy
+                               - clean_power_policy
+                               - transport_policy
+                               - industrial_transition_policy
+                               - workforce_transition_policy
+                               - community_removal_policy
+                            
+                            2) For each option:
+                               - Use or compute:
+                                 community_abatement_tCO2e
+                                 market_acceleration_tCO2e
+                                 engagement_spillover_tCO2e
+                               - Compute:
+                                 total_effective_abatement_tCO2e =
+                                   community_abatement_tCO2e
+                                   + market_acceleration_tCO2e
+                                   + engagement_spillover_tCO2e
+                               - Compute:
+                                 cost_per_tCO2e_usd = program_cost_usd / total_effective_abatement_tCO2e
+                            
+                            3) Enforce policy logic:
+                               - Avoid double counting between direct abatement and spillover channels
+                               - Keep DAC and CCS incentives targeted and realistic
+                               - Treat charging, market guarantees, and workforce credits as enabling policies with indirect benefits
+                               - Use conservative assumptions for market acceleration and engagement effects
+                            
+                            4) Sort options by cost_per_tCO2e_usd ascending
+                            
+                            5) Compute cumulative_abatement_tCO2e in sorted order
+                            
+                            6) Provide a short narrative explaining:
+                               - lowest-cost policy levers
+                               - highest-impact catalytic policies
+                               - where carbon removal credits fit relative to efficiency and electrification incentives
+                            
+                            OUTPUT:
+                            Return valid MaccResult.
+                            """,
+            output_type=self.MaccResult,
+            tools=[
+                FileSearchTool(vector_store_ids=[self.government_vector_store]),
+            ],
+        )
+
+    def _build_government_roi_agent(self):
+        return Agent(
+            name="Government Climate Policy ROI Advisor",
+            model=self.agent_model,
+            instructions="""
+                            Analyze the provided government MACC.
+                            
+                            TASKS:
+                            - Identify the cheapest policy levers by cost_per_tCO2e_usd
+                            - Identify the highest total_effective_abatement_tCO2e options
+                            - Compare:
+                              - direct deployment incentives
+                              - enabling market-formation policies
+                              - carbon removal credit policies
+                            - Highlight implementation complexity and political feasibility tradeoffs
+                            
+                            PLOTTING:
+                            - Plot cost_per_tCO2e_usd using plot_bar_chart in sorted order
+                            
+                            REQUIREMENTS:
+                            1) Return plaintext findings, ranked takeaways, and policy interpretation
+                            2) Create bar chart using plot_bar_chart with no explanation
+                            """,
+            output_type=str,
+            tools=[plot_bar_chart],
+        )
+
+    def _build_conversational_agent(self):
+        return Agent(
+            name="Government MACC Conversational Agent",
+            model=self.agent_model,
+            instructions="""
+                            You answer follow-up questions about the government climate-policy MACC.
+                            
+                            Use latest_workflow_output as the source of truth.
+                            
+                            If the user changes assumptions such as scope, region, or discount rate, explain that the workflow should be re-run.
+                            """,
+            output_type=str,
+        )
+
+    #################
+    # WORKFLOW RUN  #
+    #################
+
+    async def run(self, user_input: str):
+        # Step 1: Build MACC
+        macc_result = await Runner.run(self.government_macc_agent, user_input)
+        final_macc = macc_result.final_output_as(self.MaccResult)
+
+        self.latest_workflow_output = final_macc
+
+        # Step 2: ROI analysis + chart
+        roi_result = await Runner.run(
+            self.government_roi_agent,
+            final_macc.model_dump_json(),
+        )
+
+        return roi_result
+
+    async def chat(self, user_input: str):
+        context = (
+            self.latest_workflow_output.model_dump_json(indent=2)
+            if self.latest_workflow_output
+            else "No MACC has been generated yet."
+        )
+
+        result = await Runner.run(
+            self.conversational_agent,
+            f"latest_workflow_output:\n{context}\n\nuser:\n{user_input}",
+        )
+
+        return result.final_output

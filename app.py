@@ -77,7 +77,7 @@ def workFlowRoute():
     if mode not in {"analyze", "followup"}:
         mode = "analyze"
 
-    if workflow not in {"community", "consumer", "academic", "business"}:
+    if workflow not in {"community", "consumer", "academic", "business", "government"}:
         workflow = "community"
 
     session_state = _get_session_state()
@@ -123,4 +123,6 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0", port=port
     )  # DEPLOYMENT FOR ONLINE HOST --- DO NOT COMMENT OUT DURING COMMITS
-    # app.run(debug=True)  # DEPLOYMENT FOR LOCAL HOST --- THIS MUST BE LEFT COMMNETED OUT DURING COMMITS
+    # app.run(
+    #     debug=True
+    # )  # DEPLOYMENT FOR LOCAL HOST --- THIS MUST BE LEFT COMMNETED OUT DURING COMMITS
