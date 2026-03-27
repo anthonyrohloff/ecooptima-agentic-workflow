@@ -7,7 +7,12 @@ import json
 
 # Import functions
 from ecooptima_tools import _generate_timestamp
-from workflows import AcademicWorkflow, CommunityWorkflow, ConsumerWorkflow
+from workflows import (
+    AcademicWorkflow,
+    CommunityWorkflow,
+    ConsumerWorkflow,
+    BusinessWorkflow,
+)
 
 
 ############################
@@ -35,6 +40,8 @@ def _build_workflow(workflow_name: str):
             return ConsumerWorkflow()
         case "academic":
             return AcademicWorkflow()
+        case "business":
+            return BusinessWorkflow()
         case _:
             raise ValueError(f"Unsupported workflow '{workflow_name}'")
 

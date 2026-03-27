@@ -1,4 +1,4 @@
-from typing import List, Literal, Any
+from typing import List, Literal, Any, Optional
 from pydantic import BaseModel, Field
 from agents import (
     Agent,
@@ -451,3 +451,123 @@ class AcademicWorkflow:
             f"latest_workflow_output:\n{ctx}\n\nuser:\n{user_input}",
         )
         return result.final_output
+
+
+BusinessType = Literal["office_based", "manufacturing", "logistics", "mixed"]
+
+
+class BusinessWorkflow:
+    #################
+    # CONFIG / INIT #
+    #################
+
+    def __init__(
+        self,
+        agent_model: str = "gpt-5-nano",
+        business_vector_store: str = "vs_69bdf2ac0b9881919985276c92855f59",
+    ):
+        self.agent_model = agent_model
+        self.business_vector_store = business_vector_store
+        self.latest_workflow_output: Optional["BusinessWorkflow.MaccResult"] = None
+
+        self.business_macc_agent = self._build_business_macc_agent()
+        self.business_roi_agent = self._build_business_roi_agent()
+        self.conversational_agent = self._build_conversational_agent()
+
+    ########################
+    # SHARED DATA MODELS   #
+    ########################
+
+    class BusinessOption(BaseModel):
+        option_id: str
+        category: str
+        description: str
+
+        cost_usd: float
+        lifetime_years: int = Field(..., ge=1, le=50)
+
+        annual_abatement_tCO2e: float = Field(..., ge=0)
+        lifetime_abatement_tCO2e: float = Field(..., ge=0)
+
+        cost_per_tCO2e_usd: float
+
+        implementation_complexity: str
+        applicability: str
+        notes: str = ""
+
+    class MaccAssumptions(BaseModel):
+        business_type: BusinessType = "mixed"
+        region: str = "US"
+        discount_rate_real: float = 0.08
+        electricity_basis: str = "regional grid / contracted mix"
+        fleet_basis: str = "typical commercial fleet"
+        key_notes: List[str] = []
+
+    class MaccResult(BaseModel):
+        assumptions: "BusinessWorkflow.MaccAssumptions"
+        options: List["BusinessWorkflow.BusinessOption"]
+        sorted_option_ids: List[str]
+        cumulative_abatement_tCO2e: List[float]
+        narrative: str
+
+    ####################
+    # AGENT BUILDERS   #
+    ####################
+
+    def _build_business_macc_agent(self):
+        return Agent(
+            name="Business MACC Advisor",
+            model=self.agent_model,
+            instructions="""
+                            Build a business-focused marginal abatement cost curve for the user's prompt.
+                            Produce a response considering electricity, buildings, fleet/logistics, procurement, and operations.
+                            Estimate annual and lifetime abatement, cost, and cost_per_tCO2e_usd.
+                            Keep assumptions internally consistent, avoid double counting, and sort by cost_per_tCO2e_usd ascending.
+                            Compute cumulative_abatement_tCO2e in sorted order.
+                            """,
+            output_type=self.MaccResult,
+            tools=[FileSearchTool(vector_store_ids=[self.business_vector_store])],
+        )
+
+    def _build_business_roi_agent(self):
+        return Agent(
+            name="Business ROI Advisor",
+            model=self.agent_model,
+            instructions="""
+                            Analyze provided business MACC options.
+                            Identify lowest-cost options, highest-abatement options, and implementation tradeoffs.
+                            Plot a bar chart for cost_per_tCO2e_usd using plot_bar_chart.
+
+                            REQUIREMENTS:
+                            1. Return a plaintext response with findings, ranked lists, and takeaways.
+                            2. Create a bar chart using plot_bar_chart with no explanation.
+                            """,
+            output_type=str,
+            tools=[plot_bar_chart],
+        )
+
+    def _build_conversational_agent(self):
+        return Agent(
+            name="Business MACC Conversational Agent",
+            model=self.agent_model,
+            instructions="""
+                            You are the user-facing assistant for business follow-up questions.
+                            Use latest_workflow_output as factual context.
+                            """,
+            output_type=str,
+        )
+
+    #################
+    # WORKFLOW RUN  #
+    #################
+
+    async def run(self, user_input: str):
+        macc_result = await Runner.run(self.business_macc_agent, user_input)
+        final_macc = macc_result.final_output_as(self.MaccResult)
+        self.latest_workflow_output = final_macc
+
+        roi_result = await Runner.run(
+            self.business_roi_agent,
+            final_macc.model_dump_json(),
+        )
+        return roi_result
