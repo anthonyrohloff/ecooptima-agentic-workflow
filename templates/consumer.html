@@ -52,7 +52,7 @@
                 <form onsubmit="sendToFlask('analyze','consumer'); return false;">
                     <input type="text" id="userInput" name="userInput"
                         placeholder="Try asking: What is the best way to reduce my carbon footprint as a renter?">
-                    <button type="submit">Run Analysis</button>
+                    <button type="submit" id ="analyzeBtn">Run Analysis</button>
                     <button type="button" onclick="sendToFlask('followup')">Ask Follow-up</button>
                     <button type="button" onclick="resetConversation()">Reset Conversation</button>
                 </form>
@@ -60,7 +60,7 @@
                 <p>Potential Questions:</p>
                 <ul>
                     <li>If I replace all lights with LEDs, how much CO₂ could I save in a year?</li>
-                    <li>What’s the most cost-effective way to lower heating and cooling emissions at home</li>
+                    <li>What's the most cost-effective way to lower heating and cooling emissions at home</li>
                 </ul>
                 <div id="spinner" class="spinner" style="display:none;"></div>
             </div>
@@ -71,23 +71,27 @@
                 <div class="highlight-grid">
 
                     <div class="stat-card">
-                        <h3>🌱 CO₂ Reduced</h3>
-                        <p>2,367 kg</p>
+                        <div class="stat-title">🌱 CO₂ Avoided</div>
+                        <div class="stat-value">~4B tons</div>
+                        <div class="stat-context">U.S. households · since 1992</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>💧 Water Saved</h3>
-                        <p>4,179 L</p>
+                        <div class="stat-title">💧 Water Saved</div>
+                        <div class="stat-value">~7T gallons</div>
+                        <div class="stat-context">U.S. households · since 2006</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>⚡ Energy Optimized</h3>
-                        <p>1,128 kWh</p>
+                        <div class="stat-title">⚡ Energy Saved</div>
+                        <div class="stat-value">~5T kWh</div>
+                        <div class="stat-context">U.S. households · since 1992</div>
                     </div>
 
                     <div class="stat-card">
-                        <h3>📊 Projects Analyzed</h3>
-                        <p>61</p>
+                        <div class="stat-title">📊 Solar Generation</div>
+                        <div class="stat-value">~250B kWh</div>
+                        <div class="stat-context">U.S. homes · 2025 (annual)</div>
                     </div>
                 </div>
             </div>
@@ -117,6 +121,11 @@
         </div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imgModal">
+        <span id="closeModal">&times;</span>
+        <img id="modalImg" alt="Enlarged chart">
+    </div>
     <!-- Function for flask -- javascript code moved to js file where we can access it in multiple files. -->
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
