@@ -12,6 +12,7 @@ from workflows import (
     CommunityWorkflow,
     ConsumerWorkflow,
     BusinessWorkflow,
+    GovernmentWorkflow,
 )
 
 
@@ -42,6 +43,8 @@ def _build_workflow(workflow_name: str):
             return AcademicWorkflow()
         case "business":
             return BusinessWorkflow()
+        case "government":
+            return GovernmentWorkflow()
         case _:
             raise ValueError(f"Unsupported workflow '{workflow_name}'")
 
