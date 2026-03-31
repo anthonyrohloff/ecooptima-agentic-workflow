@@ -12,27 +12,20 @@
     <div class="layout">
         <!-- Sidebar -->
         <div class="sidebar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+            <a href="{{ url_for('about') }}" class="nav-item">About</a>
+            <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">Dashboard</a>
+            <a href="{{ url_for('academic') }}" class="dropdown-toggle nav-item">Academic</a>
+            <a href="{{ url_for('business') }}" class="nav-item active">Business</a>
+            <a href="{{ url_for('consumer') }}" class="dropdown-toggle nav-item">Consumer</a>
+            <a href="{{ url_for('community') }}" class="dropdown-toggle nav-item">Community</a>
+            <a href="{{ url_for('government') }}" class="dropdown-toggle nav-item">Government</a>
+        </div>
+
+        <div class="top-bar">
             <h2 class="logo">
                 <a href="{{ url_for('home') }}">EcoOptima</a>
             </h2>
-
-            <a href="{{ url_for('about') }}" class="nav-item">
-                About
-            </a>
-
-            <div class="dropdown">
-                <a href="{{ url_for('home') }}" class="dropdown-toggle nav-item">
-                    Dashboard
-                </a>
-
-                <div class="dropdown-menu">
-                    <a href="{{ url_for('academic') }}">Academic</a>
-                    <a href="{{ url_for('business') }}" class="nav-item active">Business</a>
-                    <a href="{{ url_for('consumer') }}">Consumer</a>
-                    <a href="{{ url_for('community') }}">Community</a>
-                    <a href="{{ url_for('government') }}">Government</a>
-                </div>
-            </div>
         </div>
     
 

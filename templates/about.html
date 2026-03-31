@@ -10,29 +10,25 @@
         <div class="layout">
             <!-- Side Bar -->
             <div class="sidebar">
-                <h2 class="logo">
-                    <a href="{{ url_for('home') }}">EcoOptima</a>
-                </h2>
+                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
 
                 <a href="{{ url_for('about') }}" class="nav-item active">
                     About
                 </a>
-
-                <div class="dropdown">
-                    
-                    <a href="{{ url_for('home') }}"  class="dropdown-toggle nav-item {% if request.endpoint in ['dashboard','community','government','academic','consumer'] %}active{% endif %}">
-                        Dashboard
-                    </a>
-                    <div class="dropdown-menu">
-                        <a href="{{ url_for('academic') }}">Academic</a>
-                        <a href="{{ url_for('business') }}">Business</a>
-                        <a href="{{ url_for('consumer') }}" >Consumer</a>
-                        <a href="{{ url_for('community') }}">Community</a>
-                        <a href="{{ url_for('government') }}">Government</a>
-                    </div>
-                </div>
-                
+                <a href="{{ url_for('home') }}"  class="dropdown-toggle nav-item {% if request.endpoint in ['dashboard','community','government','academic','consumer'] %}active{% endif %}">Dashboard</a>
+                <a href="{{ url_for('academic') }}" class="dropdown-toggle nav-item">Academic</a>
+                <a href="{{ url_for('business') }}" class="dropdown-toggle nav-item">Business</a>
+                <a href="{{ url_for('consumer') }}" class="dropdown-toggle nav-item">Consumer</a>
+                <a href="{{ url_for('community') }}" class="dropdown-toggle nav-item">Community</a>
+                <a href="{{ url_for('government') }}" class="dropdown-toggle nav-item">Government</a>
             </div>
+
+            <div class="top-bar">
+                <h2 class="logo">
+                    <a href="{{ url_for('home') }}">EcoOptima</a>
+                </h2>
+            </div>
+            
             <div class="main">
                 <div class="card">
                     <h1>Abstract</h1>
@@ -205,5 +201,7 @@
                 </div>
             </div>
         </div>
+        <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
     </body>
 </html>
