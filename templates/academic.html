@@ -26,6 +26,10 @@
             <h2 class="logo">
                 <a href="{{ url_for('home') }}">EcoOptima</a>
             </h2>
+            <div class="top-bar-auth">
+                <span class="user-chip">{{ user.name or user.email }}</span>
+                <a href="{{ url_for('logout') }}" class="auth-link">Log Out</a>
+            </div>
         </div>
     
         <!-- Main HTML -->

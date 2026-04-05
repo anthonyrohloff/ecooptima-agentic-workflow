@@ -28,6 +28,60 @@ body {
     font-weight: bold;
 }
 
+.top-bar {
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.top-bar .logo {
+    margin: 0;
+}
+
+.top-bar-auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.user-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 240px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f2b5c;
+    border: 1px solid rgba(203, 220, 255, 0.95);
+    box-shadow: 0 6px 18px rgba(15, 43, 92, 0.08);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.auth-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #0f2b5c;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(15, 43, 92, 0.12);
+}
+
+.auth-link:hover {
+    opacity: 0.92;
+}
+
 /* ===== Sidebar ===== */
 .sidebar {
     position: fixed;
@@ -435,4 +489,27 @@ h1, h2 {
 .chart-card canvas {
     width: 100% !important;
     height: 200px !important;
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        left: 16px;
+        right: 16px;
+        top: 12px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .top-bar .logo a {
+        font-size: 22px;
+    }
+
+    .top-bar-auth {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .user-chip {
+        max-width: 60vw;
+    }
 }

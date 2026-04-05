@@ -25,6 +25,11 @@ function sendToFlask(mode, workflow) {
             spinner.style.display = "none";
             inputField.disabled = false;
 
+            if (xhr.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
+
             if (xhr.status === 200) {
                 var data = JSON.parse(xhr.responseText);
                 document.getElementById("assistant-output").style.display = "block";
@@ -115,6 +120,11 @@ function resetConversation() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/reset", true);
     xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
         if (xhr.readyState === 4 && xhr.status === 200) {
             var data = JSON.parse(xhr.responseText);
             document.getElementById("response").innerText = "";
