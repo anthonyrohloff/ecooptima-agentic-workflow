@@ -9,6 +9,7 @@ from flask import (
     session,
 )
 import asyncio
+import concurrent.futures
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -18,6 +19,18 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "ecooptima-dev-secret")
 
 
 conversation_store: dict[str, dict] = {}
+
+
+def run_async(coro):
+    """
+    Safely runs an async coroutine from a synchronous Flask route.
+    Uses a dedicated thread with its own event loop to avoid conflicts
+    with any existing loop in the WSGI server (e.g. gunicorn on Render).
+    Works identically in local dev and production.
+    """
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        future = pool.submit(asyncio.run, coro)
+        return future.result()
 
 
 def _get_session_state() -> dict:
@@ -81,11 +94,16 @@ def workFlowRoute():
         workflow = "community"
 
     session_state = _get_session_state()
-    result = asyncio.run(
+
+    # FIX: Use run_async() instead of asyncio.run() directly.
+    # asyncio.run() fails silently in production WSGI servers (gunicorn on Render)
+    # because they may already have a running event loop.
+    result = run_async(
         ecooptima.main(
             user_text, mode=mode, workflow=workflow, session_state=session_state
         )
     )
+
     img_urls = []
     folder_env = os.environ.get("ECOOPTIMA_LOG_DIR")
     if folder_env and mode == "analyze":

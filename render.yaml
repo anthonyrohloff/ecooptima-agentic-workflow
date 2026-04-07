@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ecooptima
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --timeout 120 --workers 1 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: FLASK_SECRET_KEY
+        generateValue: true  # Render auto-generates a secure value
+      - key: ECOOPTIMA_LOG_DIR
+        sync: false          # Set this manually in Render dashboard if needed
